@@ -1,9 +1,11 @@
-const CACHE_NAME = "bang-lai-v3";
+const CACHE_NAME = "bang-lai-v5";
 const ASSETS = [
   "/",
   "/index.html",
   "/css/style.css",
   "/data/bank-600.json",
+  "/images/bg-pattern.svg",
+  "/images/logo-car.svg",
   "/js/topics.js",
   "/js/questions.js",
   "/js/extra-questions.js",

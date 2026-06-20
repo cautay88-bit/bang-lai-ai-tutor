@@ -4,8 +4,8 @@
   "description": "On tap va thi gia lap ly thuyet lai xe o to",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0f1419",
-  "theme_color": "#3b82f6",
+  "background_color": "#f0f9ff",
+  "theme_color": "#2563eb",
   "orientation": "portrait-primary",
   "lang": "vi",
   "icons": [
