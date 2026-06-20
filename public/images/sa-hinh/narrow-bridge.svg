@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 360" width="480" height="360">
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="#fbbf24"/>
+    </marker>
+    <filter id="shadow"><feDropShadow dx="1" dy="2" stdDeviation="2" flood-opacity="0.3"/></filter>
+  </defs>
+  <rect width="480" height="360" fill="#2d3748"/>
+  
+    <rect x="0" y="140" width="480" height="80" fill="#4a5568"/>
+  <rect x="0" y="178" width="480" height="4" fill="#fbbf24"/>
+  <rect x="0" y="188" width="480" height="2" fill="#fff" stroke-dasharray="16 12"/>
+    <rect x="170" y="140" width="140" height="80" fill="#374151"/>
+    <line x1="170" y1="140" x2="150" y2="120" stroke="#718096" stroke-width="4"/>
+    <line x1="310" y1="140" x2="330" y2="120" stroke="#718096" stroke-width="4"/>
+    <line x1="170" y1="220" x2="150" y2="240" stroke="#718096" stroke-width="4"/>
+    <line x1="310" y1="220" x2="330" y2="240" stroke="#718096" stroke-width="4"/>
+    <g transform="rotate(0 230 254)" filter="url(#shadow)">
+    <rect x="214" y="230" width="32" height="48" rx="6" fill="#2563eb" stroke="#1a202c" stroke-width="2"/>
+    <rect x="218" y="238" width="24" height="16.799999999999997" rx="3" fill="#2563eb" opacity="0.7"/>
+    <text x="230" y="224" fill="#2563eb" font-size="11" text-anchor="middle" font-family="Arial,sans-serif" font-weight="bold">Ban</text>
+  </g>
+    <g transform="rotate(0 230 124)" filter="url(#shadow)">
+    <rect x="214" y="100" width="32" height="48" rx="6" fill="#dc2626" stroke="#1a202c" stroke-width="2"/>
+    <rect x="218" y="108" width="24" height="16.799999999999997" rx="3" fill="#dc2626" opacity="0.7"/>
+    <text x="230" y="94" fill="#dc2626" font-size="11" text-anchor="middle" font-family="Arial,sans-serif" font-weight="bold">Doi dien</text>
+  </g>
+    <text x="240" y="30" fill="#e2e8f0" font-size="14" text-anchor="middle" font-family="Arial">Cau hep mot lan</text>
+  
+</svg>

@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 360" width="480" height="360">
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="#fbbf24"/>
+    </marker>
+    <filter id="shadow"><feDropShadow dx="1" dy="2" stdDeviation="2" flood-opacity="0.3"/></filter>
+  </defs>
+  <rect width="480" height="360" fill="#2d3748"/>
+  
+    <rect x="0" y="140" width="480" height="80" fill="#4a5568"/>
+  <rect x="0" y="178" width="480" height="4" fill="#fbbf24"/>
+  <rect x="0" y="188" width="480" height="2" fill="#fff" stroke-dasharray="16 12"/>
+    <g transform="rotate(0 306 170)" filter="url(#shadow)">
+    <rect x="280" y="155" width="52" height="30" rx="6" fill="#2563eb" stroke="#1a202c" stroke-width="2"/>
+    <rect x="284" y="163" width="44" height="10.5" rx="3" fill="#2563eb" opacity="0.7"/>
+    <text x="306" y="149" fill="#2563eb" font-size="11" text-anchor="middle" font-family="Arial,sans-serif" font-weight="bold">Ban</text>
+  </g>
+    <g filter="url(#shadow)">
+      <rect x="120" y="150" width="60" height="32" rx="4" fill="#fff" stroke="#dc2626" stroke-width="2"/>
+      <rect x="130" y="158" width="40" height="16" fill="#dc2626"/>
+      <text x="150" y="140" fill="#dc2626" font-size="11" text-anchor="middle" font-family="Arial">CUU THUONG</text>
+    </g>
+    <path d="M180 166 L270 166" fill="none" stroke="#fbbf24" stroke-width="2" marker-end="url(#arrow)"/>
+    <text x="240" y="30" fill="#e2e8f0" font-size="14" text-anchor="middle" font-family="Arial">Xe uu tien dang den</text>
+  
+</svg>

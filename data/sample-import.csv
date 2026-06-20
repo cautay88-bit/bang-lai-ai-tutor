@@ -1,0 +1,3 @@
+# Cau hoi mau de import CSV
+# id,topicId,type,text,optionA,optionB,optionC,optionD,correct,explanation,image
+imp001,ch6-sa-hinh,sahinh,"Tai nga tu nhu hinh xe do tu trai gap xe xanh di len ai di truoc?","Xe xanh","Xe do ben phai","Ai nhanh hon","Xe lon hon",1,"Quy tac ben phai: xe do o ben phai xe xanh",intersection.svg

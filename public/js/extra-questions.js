@@ -1,0 +1,60 @@
+// Bo sung 50 cau hoi theo 6 chuong (q031 - q080)
+const EXTRA_QUESTIONS = [
+  {id:"q031",topicId:"ch1-quy-dinh-chung",type:"mcq",text:"Kho gioi han chieu cao cua xe o to duoc xac dinh boi?",options:["A. Nguoi lai xe","B. Thiet ke va quy dinh phap luat","C. Nha san xuat xe","D. Khong gioi han"],correct:1,explanation:"Kho gioi han do phap luat va bien bao quy dinh."},
+  {id:"q032",topicId:"ch1-quy-dinh-chung",type:"mcq",text:"Khi chuyen lan duong, nguoi lai xe phai?",options:["A. Bam coi","B. Bat xi-nhan, quan sat guong","C. Tang toc","D. Chi nhin phia truoc"],correct:1,explanation:"Chuyen lan: xi-nhan, guong, diem mu."},
+  {id:"q033",topicId:"ch1-quy-dinh-chung",type:"mcq",text:"Dung xe la trang thai dung yen trong thoi gian?",options:["A. Duoi 5 phut","B. Tren 5 phut","C. Khong xac dinh","D. Tren 1 gio"],correct:0,explanation:"Dung xe: thoi gian ngan de len xuong hoac xu ly viec."},
+  {id:"q034",topicId:"ch1-quy-dinh-chung",type:"mcq",text:"Do xe la dung xe khong xac dinh thoi gian?",options:["A. Dung","B. Sai","C. Chi ban dem","D. Chi tren cao toc"],correct:0,explanation:"Do xe: khong xac dinh thoi gian, phai tuan noi cam do."},
+  {id:"q035",topicId:"ch1-quy-dinh-chung",type:"mcq",text:"Vuot xe thuong thuc hien ben?",options:["A. Phai","B. Trai","C. Tuy y","D. Via he"],correct:1,explanation:"Nguyen tac vuot xe ben trai."},
+  {id:"q036",topicId:"ch1-quy-dinh-chung",type:"mcq",text:"Xe sau xin vuot, xe phia truoc nen?",options:["A. Tang toc","B. Sat le phai, giam toc neu an toan","C. Phanh gap","D. Bam coi"],correct:1,explanation:"Giup xe sau vuot an toan bang cach sat le phai."},
+  {id:"q037",topicId:"ch1-quy-dinh-chung",type:"essay",text:"Neu cac truong hop cam vuot xe?",sampleAnswer:"Cam vuot: co bien cam; cau hep; duong cong; gan nga tu; xe truoc dang vuot; vach lien.",explanation:"Nho cac diem cam vuot de tranh vi pham."},
+  {id:"q038",topicId:"ch1-quy-dinh-chung",type:"mcq",text:"Toc do toi da o to con trong do thi co via he?",options:["A. 50","B. 60","C. 70","D. 80"],correct:1,explanation:"Do thi co via he: thuong 60 km/h."},
+  {id:"q039",topicId:"ch1-quy-dinh-chung",type:"mcq",text:"Trong ham duong bo bat buoc?",options:["A. Tat den","B. Bat den chieu sang","C. Den pha","D. Den caanh bao"],correct:1,explanation:"Trong ham phai bat den chieu sang."},
+  {id:"q040",topicId:"ch1-quy-dinh-chung",type:"mcq",text:"Lan ngoai cung ben phai thuong danh cho?",options:["A. Xe nhanh","B. Xe cham va xe vao/ra","C. Xe tai","D. Xe vuot"],correct:1,explanation:"Lan phai danh cho xe cham va vao/ra duong."},
+
+  {id:"q041",topicId:"ch2-van-hoa-giao-thong",type:"mcq",text:"Van hoa giao thong the hien qua?",options:["A. Bam coi lien tuc","B. Tuan luat va nhuong nhuon","C. Chay nhanh","D. Vuot cam"],correct:1,explanation:"Van hoa giao thong la tuan thu luat va ung xu van minh."},
+  {id:"q042",topicId:"ch2-van-hoa-giao-thong",type:"mcq",text:"Khong that day an toan bi xu phat vi?",options:["A. Khong vi pham","B. Vi pham an toan","C. Chi tren cao toc","D. Chi xe khach"],correct:1,explanation:"Day an toan la bat buoc."},
+  {id:"q043",topicId:"ch2-van-hoa-giao-thong",type:"mcq",text:"Tre em duoi 10 tuoi ngoi ghe truoc?",options:["A. Duoc","B. Khong duoc (tru xe 2 hang ghe)","C. Chi ban ngay","D. Chi duong ngo"],correct:1,explanation:"Tre duoi 10 tuoi khong ngoi ghe truoc."},
+  {id:"q044",topicId:"ch2-van-hoa-giao-thong",type:"essay",text:"Vi sao khong nen lai xe khi met moi?",sampleAnswer:"Met moi lam giam tap trung, phan xa cham, de gay tai nan. Nen nghi 15-20 phut.",explanation:"Lai xe met moi rat nguy hiem."},
+  {id:"q045",topicId:"ch2-van-hoa-giao-thong",type:"mcq",text:"Bo tron hien truong tai nan?",options:["A. Chi phat hanh chinh","B. Co the bi truy cuu hinh su","C. Khong vi pham","D. Chi canh cao"],correct:1,explanation:"Bo tron hien truong la hanh vi nghiem trong."},
+  {id:"q046",topicId:"ch2-van-hoa-giao-thong",type:"mcq",text:"GPLX het han thi?",options:["A. Lai them 30 ngay","B. Khong duoc lai","C. Chi lai ban ngay","D. Chi trong pho"],correct:1,explanation:"Phai gia han GPLX truoc khi lai tiep."},
+  {id:"q047",topicId:"ch2-van-hoa-giao-thong",type:"mcq",text:"Nong do con cho nguoi lai xe khong kinh doanh?",options:["A. 50mg","B. 0 mg","C. 80mg","D. 100mg"],correct:1,explanation:"Khong duoc uong ruou bia khi lai xe."},
+  {id:"q048",topicId:"ch2-van-hoa-giao-thong",type:"mcq",text:"Su dung dien thoai khi lai xe?",options:["A. Duoc neu goi nhanh","B. Bi cam (tru thiet bi ranh tay)","C. Chi cam cao toc","D. Chi cam ban dem"],correct:1,explanation:"Cam dung dien thoai khi lai xe."},
+
+  {id:"q049",topicId:"ch3-ky-thuat-lai-xe",type:"mcq",text:"Khoi hanh xe so san?",options:["A. Nha phanh, vao so","B. Con, so, nha phanh, nha con tu tu","C. Tang ga manh","D. Vao so khong can con"],correct:1,explanation:"Khoi hanh so san: con - so - phanh tay - ga."},
+  {id:"q050",topicId:"ch3-ky-thuat-lai-xe",type:"mcq",text:"Duong tran mua can?",options:["A. Tang toc","B. Giam toc, tang khoang cach","C. Phanh gap","D. Tat ABS"],correct:1,explanation:"Duong tran: giam toc, tang khoang cach."},
+  {id:"q051",topicId:"ch3-ky-thuat-lai-xe",type:"mcq",text:"Dung khan cap tren quoc lo?",options:["A. Dung giua lan","B. Sang le, bat den canh bao, dat tam giac","C. Khong can tam giac","D. Chi bat coi"],correct:1,explanation:"Dung khan cap: le phai, hazard, tam giac."},
+  {id:"q052",topicId:"ch3-ky-thuat-lai-xe",type:"mcq",text:"Lai xe ban dem?",options:["A. Den pha lien tuc","B. Giam toc, dung den gan khi gap xe nguoc chieu","C. Tang toc","D. Tat den"],correct:1,explanation:"Ban dem: giam toc, chuyen den gan."},
+  {id:"q053",topicId:"ch3-ky-thuat-lai-xe",type:"essay",text:"Cach len doc cao (so san)?",sampleAnswer:"So 1-2, con, phanh tay, ga vua, nha con tu tu, nha phanh tay khi co luc keo.",explanation:"Len doc can phoi hop con-ga-phanh tay."},
+  {id:"q054",topicId:"ch3-ky-thuat-lai-xe",type:"mcq",text:"Quy tac 2-3 giay ap dung cho?",options:["A. Khoang cach an toan","B. Do xe","C. Do xang","D. Xi-nhan"],correct:0,explanation:"Quy tac giay giup duy tri khoang cach an toan."},
+  {id:"q055",topicId:"ch3-ky-thuat-lai-xe",type:"mcq",text:"Thuy kich (aquaplaning)?",options:["A. Phanh gap","B. Nha ga, giu lai thang","C. Tang ga","D. Danh lai manh"],correct:1,explanation:"Thuy kich: nha ga, giu volang thang."},
+  {id:"q056", topicId:"ch3-ky-thuat-lai-xe",type:"mcq",text:"Qua vung nuoc sau?",options:["A. Tang ga","B. Giam toc, so thap","C. Dung giua vung","D. Tat may"],correct:1,explanation:"Qua vung nuoc: giam toc, so thap."},
+
+  {id:"q057",topicId:"ch4-cau-tao-sua-chua",type:"mcq",text:"Den nhiet do nuoc sang?",options:["A. Tiep tuc chay","B. Dung xe kiem tra","C. Tang ga","D. Mo capo ngay"],correct:1,explanation:"Qua nhiet: dung xe, kiem tra khi nguoi."},
+  {id:"q058",topicId:"ch4-cau-tao-sua-chua",type:"mcq",text:"Lop mon het vach TWI?",options:["A. Van dung","B. Phai thay","C. Bom them","D. Khong can"],correct:1,explanation:"Lop mon mat an toan, phai thay."},
+  {id:"q059",topicId:"ch4-cau-tao-sua-chua",type:"mcq",text:"He thong ABS co tac dung?",options:["A. Tang toc","B. Ngan banh khoa khi phanh gap","C. Giam xang","D. Tu do xe"],correct:1,explanation:"ABS giu kha nang lai khi phanh gap."},
+  {id:"q060",topicId:"ch4-cau-tao-sua-chua",type:"mcq",text:"Ac quy dung de?",options:["A. Lam mat","B. Cap dien khoi dong va thiet bi dien","C. Loc xang","D. Tang cong suat"],correct:1,explanation:"Ac quy cap dien khoi dong va khi may tat."},
+  {id:"q061",topicId:"ch4-cau-tao-sua-chua",type:"essay",text:"Kiem tra truoc khi khoi hanh?",sampleAnswer:"Lop, den, guong, phanh, nuoc, dau, nhien lieu, coi, gat mua.",explanation:"Kiem tra truoc khi di la thoi quen an toan."},
+  {id:"q062",topicId:"ch4-cau-tao-sua-chua",type:"mcq",text:"Den dau nhot sang khi chay?",options:["A. Tiep tuc","B. Dung ngay, tat may","C. Tang ga","D. Bo qua"],correct:1,explanation:"Mat ap suat dau co the hong dong co."},
+  {id:"q063",topicId:"ch4-cau-tao-sua-chua",type:"mcq",text:"Do ap suat lop khi?",options:["A. Lop nong","B. Lop nguoi","C. Sau mua","D. Khong can"],correct:1,explanation:"Do ap suat khi lop nguoi."},
+
+  {id:"q064",topicId:"ch5-bao-hieu-duong-bo",type:"mcq",text:"Bien tron, vien do, nen trang?",options:["A. Nguy hiem","B. Cam","C. Chi dan","D. Hieu lenh"],correct:1,explanation:"Tron, vien do, nen trang = cam."},
+  {id:"q065",topicId:"ch5-bao-hieu-duong-bo",type:"mcq",text:"Bien tron, nen xanh?",options:["A. Cam","B. Hieu lenh","C. Nguy hiem","D. Phu"],correct:1,explanation:"Tron, nen xanh = hieu lenh bat buoc."},
+  {id:"q066",topicId:"ch5-bao-hieu-duong-bo",type:"mcq",text:"Bien tam giac, vien do, nen vang?",options:["A. Cam","B. Nguy hiem","C. Chi dan","D. Hieu lenh"],correct:1,explanation:"Tam giac, vang = nguy hiem."},
+  {id:"q067",topicId:"ch5-bao-hieu-duong-bo",type:"mcq",text:"Vach lien trang?",options:["A. Duoc vuot","B. Cam vuot","C. Chi xe may","D. Lan dung"],correct:1,explanation:"Vach lien: cam vuot."},
+  {id:"q068",topicId:"ch5-bao-hieu-duong-bo",type:"mcq",text:"Den vang nhay?",options:["A. Di nhanh","B. Giam toc, quan sat","C. Dung tuyet doi","D. Uu tien"],correct:1,explanation:"Den vang nhay: canh bao, giam toc."},
+  {id:"q069",topicId:"ch5-bao-hieu-duong-bo",type:"essay",text:"Phan biet bien cam va hieu lenh?",sampleAnswer:"Cam: tron, do, trang. Hieu lenh: tron, xanh, bat buoc thuc hien.",explanation:"Cam = khong duoc; Hieu lenh = phai lam."},
+  {id:"q070",topicId:"ch5-bao-hieu-duong-bo",type:"mcq",text:"Bien chu nhat, nen xanh duong?",options:["A. Cam","B. Nguy hiem","C. Chi dan","D. Phu"],correct:2,explanation:"Chu nhat, xanh duong = chi dan."},
+  {id:"q071",topicId:"ch5-bao-hieu-duong-bo",type:"mcq",text:"Den do nghia la?",options:["A. Di","B. Dung lai","C. Canh bao","D. Re trai"],correct:1,explanation:"Den do: dung lai truoc vach."},
+
+  {id:"q072",topicId:"ch6-sa-hinh",type:"mcq",text:"Xe cuu thuong uu tien?",options:["A. Tiep tuc di","B. Nhuong duong","C. Tang toc","D. Chi tren cao toc"],correct:1,explanation:"Phai nhuong xe uu tien."},
+  {id:"q073",topicId:"ch6-sa-hinh",type:"mcq",text:"Tau sap den duong ngang khong rao?",options:["A. Vuot nhanh","B. Dung cach ray 5m","C. Dung tren ray","D. Bam coi"],correct:1,explanation:"Dung cach ray toi thieu 5m."},
+  {id:"q074",topicId:"ch6-sa-hinh",type:"mcq",text:"Duong hep doc, ai nhuong?",options:["A. Len doc","B. Xuong doc nhuong len doc","C. Xe nho","D. Ai nhanh"],correct:1,explanation:"Xe xuong doc nhuong xe len doc."},
+  {id:"q075",topicId:"ch6-sa-hinh",type:"essay",text:"Xe truoc bat xi-nhan phai?",sampleAnswer:"Giam toc, quan sat guong, giu khoang cach, khong vuot.",explanation:"Xi-nhan phai bao hieu re/chuyen lan."},
+  {id:"q076",topicId:"ch6-sa-hinh",type:"mcq",text:"Den do duoc re phai?",options:["A. Khong bao gio","B. Duoc neu khong cam, nhuong nguoi di bo","C. Luon duoc","D. Chi ban dem"],correct:1,explanation:"Re phai khi do: tuy noi, phai nhuong nguoi di bo."},
+  {id:"q077",topicId:"ch6-sa-hinh",type:"mcq",text:"Lan xe buyt rieng?",options:["A. Duoc di","B. Cam (tru khi duoc phep)","C. Chi ban dem","D. Khong vi pham"],correct:1,explanation:"Khong lan lan xe buyt."},
+  {id:"q078",topicId:"ch6-sa-hinh",type:"mcq",text:"Suong mu day?",options:["A. Den pha","B. Den suong mu va den gan","C. Tat den","D. Hazard lien tuc"],correct:1,explanation:"Suong mu: den suong mu, khong dung pha."},
+  {id:"q079",topicId:"ch6-sa-hinh",type:"mcq",text:"Xe dap tren lan o to?",options:["A. Bam coi","B. Giam toc, nhuong, vuot an toan","C. Ep sang le","D. Tang toc"],correct:1,explanation:"Nhuong xe dap, vuot an toan."},
+  {id:"q080",topicId:"ch6-sa-hinh",type:"mcq",text:"Vat can tren cao toc?",options:["A. Phanh gap giua lan","B. Quan sat, doi lan hoac giam toc","C. Lai thang qua","D. Dung ngay"],correct:1,explanation:"Khong phanh gap giua lan, tranh an toan."}
+];
+
+QUESTION_BANK.push(...EXTRA_QUESTIONS);
