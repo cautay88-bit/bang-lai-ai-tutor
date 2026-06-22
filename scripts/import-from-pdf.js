@@ -4,7 +4,6 @@
  */
 const fs = require("fs");
 const path = require("path");
-const pdfParse = require("../node_modules/pdf-parse");
 
 const PDF_PATH = process.argv[2] || path.join(__dirname, "../data/bo-600-official.pdf");
 const OUT_JSON = path.join(__dirname, "../public/data/bank-600.json");
@@ -314,11 +313,12 @@ async function main() {
   }
 
   const buf = fs.readFileSync(PDF_PATH);
+  const pdfParse = require("pdf-parse");
   const parsed = await pdfParse(buf);
   const textQuestions = parseQuestionsFromText(parsed.text);
   console.log(`Parsed ${textQuestions.length} questions from PDF text`);
 
-  const pdfjs = await import("../node_modules/pdfjs-dist/legacy/build/pdf.mjs");
+  const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
   const { getDocument, OPS } = pdfjs;
   const doc = await getDocument({ data: new Uint8Array(buf), useSystemFonts: true }).promise;
 
