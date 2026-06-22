@@ -75,8 +75,9 @@ function jsonResponse(res, status, data) {
 
 function serveStatic(req, res) {
   const rel = req.url === "/" ? "index.html" : req.url.split("?")[0].replace(/^\//, "");
-  const filePath = path.normalize(path.join(PUBLIC_DIR, rel));
-  if (!filePath.startsWith(PUBLIC_DIR)) {
+  const publicRoot = path.resolve(PUBLIC_DIR);
+  const filePath = path.resolve(path.join(PUBLIC_DIR, rel));
+  if (filePath !== publicRoot && !filePath.startsWith(publicRoot + path.sep)) {
     res.writeHead(403);
     return res.end("Forbidden");
   }
@@ -87,7 +88,13 @@ function serveStatic(req, res) {
       return res.end("Not Found");
     }
     const ext = path.extname(filePath);
-    res.writeHead(200, { "Content-Type": MIME[ext] || "application/octet-stream" });
+    const headers = { "Content-Type": MIME[ext] || "application/octet-stream" };
+    if (rel === "data/bank-600.json") {
+      headers["Cache-Control"] = "no-cache";
+    } else if (rel.startsWith("images/official/")) {
+      headers["Cache-Control"] = "public, max-age=31536000, immutable";
+    }
+    res.writeHead(200, headers);
     res.end(data);
   });
 }

@@ -8,7 +8,7 @@ async function loadQuestionBank() {
 
   QUESTION_BANK_LOADING = (async () => {
     try {
-      const res = await fetch("/data/bank-600.json");
+      const res = await fetch("/data/bank-600.json?v=2", { cache: "no-store" });
       if (res.ok) {
         const data = await res.json();
         const imported = data.questions || data;

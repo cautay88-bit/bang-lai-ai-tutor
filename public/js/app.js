@@ -77,8 +77,13 @@ function showView(name) {
 function updateBankInfo() {
   const size = typeof getQuestionBankSize === "function" ? getQuestionBankSize() : QUESTION_BANK.length;
   const saCount = typeof getSaHinhQuestions === "function" ? getSaHinhQuestions().length : 0;
+  const imgCount = QUESTION_BANK.filter(q => q.image).length;
   const el = document.getElementById("bank-size-info");
-  if (el) el.textContent = `Ngân hàng: ${size} câu (${saCount} sa hình)`;
+  if (el) {
+    el.textContent = isOfficialBank()
+      ? `Ngân hàng: ${size} câu chính thức (${imgCount} có hình, ${saCount} sa hình)`
+      : `Ngân hàng: ${size} câu (${saCount} sa hình)`;
+  }
   const settingsCount = document.getElementById("settings-bank-count");
   if (settingsCount) settingsCount.textContent = size + "+";
 }
@@ -185,9 +190,20 @@ function registerPWA() {
 function renderQuestionImage(q) {
   if (!q.image) return "";
   const alt = q.type === "sahinh" ? "Sa hinh giao thong" : "Bien bao duong bo";
+  const src = escapeHtml(q.image);
   return `<div class="sahinh-image-wrap">
-    <img src="${escapeHtml(q.image)}" alt="${alt}" class="sahinh-image" loading="lazy">
+    <div class="image-loading">Đang tải hình...</div>
+    <img src="${src}" alt="${alt}" class="sahinh-image question-image" loading="eager" decoding="async"
+      onload="this.style.opacity='1';var p=this.previousElementSibling;if(p)p.remove()"
+      onerror="var p=this.previousElementSibling;if(p){p.className='image-error';p.textContent='Không tải được hình. Thử Ctrl+F5 tải lại trang.';}this.remove()">
   </div>`;
+}
+
+function preloadQuestionImages(questions) {
+  questions.filter(q => q.image).forEach(q => {
+    const img = new Image();
+    img.src = q.image;
+  });
 }
 
 function getQuestionTypeLabel(q) {
@@ -492,6 +508,8 @@ function startExam() {
       durationMinutes: duration,
       timerInterval: null
     };
+
+    preloadQuestionImages(AppState.exam.questions);
 
     document.getElementById("exam-setup-panel").style.display = "none";
     document.getElementById("exam-session-panel").style.display = "block";
