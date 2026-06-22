@@ -184,8 +184,9 @@ function registerPWA() {
 
 function renderQuestionImage(q) {
   if (!q.image) return "";
+  const alt = q.type === "sahinh" ? "Sa hinh giao thong" : "Bien bao duong bo";
   return `<div class="sahinh-image-wrap">
-    <img src="${escapeHtml(q.image)}" alt="Sa hinh giao thong" class="sahinh-image" loading="lazy">
+    <img src="${escapeHtml(q.image)}" alt="${alt}" class="sahinh-image" loading="lazy">
   </div>`;
 }
 
@@ -370,6 +371,8 @@ function renderPracticeQuestion(q) {
   let html = `
     <div class="question-box">
       <span class="q-type ${q.type === "essay" ? "essay" : q.type === "sahinh" ? "sahinh" : ""}">${getQuestionTypeLabel(q)}</span>
+      ${q.critical ? '<span class="q-type" style="background:var(--danger);margin-left:0.5rem">Điểm liệt</span>' : ""}
+      ${q.num ? `<span style="font-size:0.8rem;color:var(--text-muted);display:block;margin-bottom:0.5rem">Câu ${q.num} / 600</span>` : ""}
       ${renderQuestionImage(q)}
       <p class="q-text">${escapeHtml(q.text)}</p>`;
 
@@ -476,13 +479,13 @@ function renderExamSetup() {
 }
 
 function startExam() {
-  const duration = parseInt(document.getElementById("exam-duration").value, 10);
-  const questionCount = duration <= 30 ? 25 : 30;
+  const duration = 20;
+  const questionCount = 30;
 
   ensureBankReady().then(() => {
     AppState.exam = {
       active: true,
-      questions: getRandomQuestions(questionCount),
+      questions: isOfficialBank() ? buildExamPaperB() : getRandomQuestions(questionCount),
       currentIndex: 0,
       answers: {},
       startTime: Date.now(),
@@ -528,6 +531,8 @@ function renderExamQuestion() {
 
   let html = `<div class="question-box">
     <span class="q-type ${q.type === "sahinh" ? "sahinh" : q.type === "essay" ? "essay" : ""}">${getQuestionTypeLabel(q)}</span>
+    ${q.critical ? '<span class="q-type" style="background:var(--danger);margin-left:0.5rem">Điểm liệt</span>' : ""}
+    ${q.num ? `<span style="font-size:0.8rem;color:var(--text-muted);display:block;margin-bottom:0.5rem">Câu ${q.num} / 600</span>` : ""}
     ${renderQuestionImage(q)}
     <p class="q-text">${escapeHtml(q.text)}</p>`;
 
@@ -608,7 +613,20 @@ async function finishExam() {
 
   const total = questions.length;
   const scorePct = Math.round((correct / total) * 100);
-  const passed = correct >= Math.ceil(total * 0.84);
+  const passScore = isOfficialBank() ? 27 : Math.ceil(total * 0.84);
+
+  let criticalFailed = false;
+  let criticalQuestion = null;
+  for (let i = 0; i < questions.length; i++) {
+    if (questions[i].critical) {
+      criticalQuestion = questions[i];
+      const ans = answers[i];
+      if (ans !== questions[i].correct) criticalFailed = true;
+      break;
+    }
+  }
+
+  const passed = correct >= passScore && !criticalFailed;
 
   const weakTopics = Object.entries(topicResults)
     .map(([id, r]) => ({ topicId: id, accuracy: r.correct / r.total }))
@@ -628,8 +646,11 @@ async function finishExam() {
         <span class="score-label">${scorePct}%</span>
       </div>
       <h3>${passed ? "🎉 ĐẠT — Chúc mừng!" : "📚 Chưa đạt — Cố gắng thêm nhé!"}</h3>
+      ${criticalFailed ? `<p style="color:var(--danger);font-weight:600;margin:0.75rem 0">⚠️ Trả lời sai câu điểm liệt — bài thi không đạt dù các câu khác đúng.</p>` : ""}
       <p style="color:var(--text-muted);margin:1rem 0">
-        Điểm chuẩn thi thật: 21/25 câu (84%). Thời gian: ${elapsed} phút / ${durationMinutes} phút.
+        ${isOfficialBank()
+          ? `Thi thật hạng B: 30 câu / 20 phút / đạt ${passScore}/30. Có 1 câu điểm liệt trong đề.`
+          : `Điểm chuẩn: ${passScore}/${total} câu. Thời gian: ${elapsed} phút / ${durationMinutes} phút.`}
       </p>
       ${weakTopics.length ? `
         <div class="card" style="text-align:left;margin-top:1.5rem">

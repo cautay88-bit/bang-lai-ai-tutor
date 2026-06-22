@@ -5,7 +5,8 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "build": "node scripts/build-600-questions.js && node scripts/build-sahinh-svg.js",
+    "build": "node scripts/import-from-pdf.js",
+    "import-pdf": "node scripts/import-from-pdf.js",
     "import-csv": "node scripts/import-from-csv.js"
   },
   "engines": {

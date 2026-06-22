@@ -4,3 +4,4 @@ data/sessions.json
 data/progress/
 .env
 *.log
+public/images/official/*.raw

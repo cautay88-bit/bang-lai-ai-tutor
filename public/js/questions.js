@@ -390,12 +390,14 @@ function getQuestionsByTopic(topicId) {
 }
 
 function getRandomQuestions(count, topicIds = null) {
-  let pool = QUESTION_BANK;
+  if (isOfficialBank() && count === 30) {
+    return buildExamPaperB();
+  }
+  let pool = QUESTION_BANK.filter(q => isMcqLike(q));
   if (topicIds && topicIds.length > 0) {
     pool = pool.filter(q => topicIds.includes(q.topicId));
   }
-  const shuffled = [...pool].sort(() => Math.random() - 0.5);
-  return shuffled.slice(0, Math.min(count, shuffled.length));
+  return shuffleArray(pool).slice(0, Math.min(count, pool.length));
 }
 
 function getQuestionById(id) {

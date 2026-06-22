@@ -41,7 +41,7 @@
       <div class="hero">
         <div class="hero-badge">🚗 Ôn thi bằng lái xe hạng B2</div>
         <h2>Chương trình ôn tập thông minh</h2>
-        <p>AI Tutor giúp bạn ôn 600 câu lý thuyết, sa hình, chấm tự luận và theo dõi điểm yếu.</p>
+        <p>AI Tutor giúp bạn ôn 600 câu lý thuyết chính thức (Công văn 2262/CSGT-P5), sa hình, và theo dõi điểm yếu.</p>
         <p style="font-size:0.85rem;color:var(--accent)" id="bank-size-info"></p>
         <div class="btn-group" style="justify-content:center">
           <button class="btn btn-primary" onclick="showView('practice')">Bắt đầu ôn tập</button>
@@ -115,22 +115,20 @@
     <section id="view-exam" class="view">
       <div id="exam-setup-panel">
         <div class="hero" style="padding:1rem 0 2rem">
-          <h2>Thi giả lập</h2>
-          <p>Mô phỏng kỳ thi sát thực tế — 25–30 câu ngẫu nhiên từ 6 chương</p>
+          <h2>Thi giả lập hạng B</h2>
+          <p>Chuẩn Công văn 2262/CSGT-P5 — 30 câu / 20 phút / đạt 27/30 + 1 câu điểm liệt</p>
         </div>
         <div class="card" style="max-width:500px;margin:0 auto">
-          <div class="form-group">
-            <label>Thời gian làm bài</label>
-            <select id="exam-duration">
-              <option value="30">30 phút (25 câu)</option>
-              <option value="35" selected>35 phút (30 câu)</option>
-              <option value="45">45 phút (30 câu)</option>
-            </select>
-          </div>
-          <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:1rem">
-            Điểm đạt: ≥ 84% (tương đương 21/25 câu đúng trong thi thật). Bao gồm câu trắc nghiệm và tự luận.
+          <ul style="font-size:0.9rem;color:var(--text-muted);margin:0 0 1rem 1.2rem;line-height:1.8">
+            <li>8 câu Chương I (quy tắc giao thông)</li>
+            <li>1 câu điểm liệt (tình huống mất ATGT nghiêm trọng)</li>
+            <li>1 câu Chương II, III, IV</li>
+            <li>9 câu Chương V (biển báo) + 9 câu Chương VI (sa hình)</li>
+          </ul>
+          <p style="font-size:0.85rem;color:var(--danger);margin-bottom:1rem">
+            Sai câu điểm liệt = trượt dù các câu khác đúng hết.
           </p>
-          <button class="btn btn-primary" style="width:100%" onclick="startExam()">Bắt đầu thi</button>
+          <button class="btn btn-primary" style="width:100%" onclick="startExam()">Bắt đầu thi (20 phút)</button>
         </div>
       </div>
 

@@ -1,100 +1,70 @@
-# AI Tutor — Ôn thi bằng lái xe B2
+# AI Tutor — Ôn thi bằng lái xe hạng B
 
-Ứng dụng web/PWA với **600 câu hỏi**, **sa hình**, **AI tutor**, **đăng nhập cloud** và **deploy online**.
+Ứng dụng web/PWA với **600 câu hỏi chính thức** (Công văn 2262/CSGT-P5), **biển báo & sa hình**, **AI tutor**, **đăng nhập cloud** và **deploy online**.
 
 ## Tính năng
 
-- **600 câu** theo 6 chương (file `public/data/bank-600.json`)
-- **14+ sa hình** SVG kiểu đề thi (nhìn từ trên, xe màu, vạch đường)
-- AI Tutor (OpenAI/Gemini), thi giả lập, theo dõi điểm yếu
-- Đăng nhập + đồng bộ tiến độ cloud
+- **600 câu** chính thức theo 6 chương (180 / 25 / 58 / 37 / 185 / 115)
+- **60 câu điểm liệt** (Phụ lục III)
+- **Thi giả lập hạng B**: 30 câu / 20 phút / đạt 27/30 + không sai điểm liệt
+- Ảnh biển báo & sa hình trích từ PDF gốc
+- AI Tutor (OpenAI/Gemini), theo dõi điểm yếu
 - PWA — cài lên điện thoại
 
 ## Chạy local
 
 ```bash
 cd bang-lai-ai-tutor
-npm run build    # sinh 600 cau + sa hinh SVG
 npm start        # http://localhost:3000
 ```
 
-## 1. Import 600 câu hỏi
+## Import 600 câu từ PDF chính thức
 
-### Tự động (đã có sẵn)
-```bash
-node scripts/build-600-questions.js
-```
-Tạo `public/data/bank-600.json` — 100 câu/chương.
-
-### Import từ CSV (bộ câu chính thức)
-Chuẩn bị file CSV với header:
-```
-id,topicId,type,text,optionA,optionB,optionC,optionD,correct,explanation,image
-```
+Đặt file PDF tại `data/bo-600-official.pdf`, sau đó:
 
 ```bash
-node scripts/import-from-csv.js data/600-cau.csv
+npm run import-pdf
 ```
 
-Xem mẫu: `data/sample-import.csv`
+Script `scripts/import-from-pdf.js` sẽ:
+- Parse 600 câu hỏi + đáp án (gạch chân trong PDF)
+- Gắn 60 câu điểm liệt
+- Trích ảnh biển báo / sa hình vào `public/images/official/`
+- Tạo `public/data/bank-600.json`
 
-## 2. Sa hình
-
-```bash
-node scripts/build-sahinh-svg.js
-```
-
-Tạo 12 hình SVG trong `public/images/sa-hinh/`:
-ngã tư, vạch sang đường, bùng binh, rẽ trái, đường ưu tiên, cầu hẹp, trường học, cao tốc, đường ray, dốc, xe cứu thương, đèn đỏ rẽ phải.
-
-## 3. Deploy online
+## Deploy online
 
 ### Render (miễn phí)
 1. Push code lên GitHub
 2. [render.com](https://render.com) → New → Blueprint → chọn repo
 3. File `render.yaml` tự cấu hình
-4. URL dạng: `https://bang-lai-ai-tutor.onrender.com`
 
-### Railway
-1. [railway.app](https://railway.app) → New Project → Deploy from GitHub
-2. Dùng `Dockerfile` hoặc `railway.toml`
-3. Thêm volume cho `/app/data` (lưu user & tiến độ)
-
-### Docker (VPS bất kỳ)
+### Docker
 ```bash
 docker build -t bang-lai-tutor .
 docker run -d -p 3000:3000 -v bang-lai-data:/app/data bang-lai-tutor
 ```
 
-### Biến môi trường
-| Biến | Mặc định | Mô tả |
-|------|----------|--------|
-| `PORT` | 3000 | Cổng server |
-| `HOST` | 0.0.0.0 | Bind address |
-
 ## Cấu trúc
 
 ```
 bang-lai-ai-tutor/
-├── server.js
-├── Dockerfile
-├── render.yaml
-├── railway.toml
-├── package.json
-├── scripts/
-│   ├── build-600-questions.js
-│   ├── build-sahinh-svg.js
-│   └── import-from-csv.js
-├── public/
-│   ├── data/bank-600.json
-│   ├── images/sa-hinh/
-│   └── js/
-└── data/          # user & tiến độ (runtime)
+├── data/bo-600-official.pdf
+├── scripts/import-from-pdf.js
+├── public/data/bank-600.json
+├── public/images/official/
+└── public/js/
 ```
 
-## Sau khi deploy
+## Cấu trúc đề thi hạng B (2262)
 
-1. Mở URL trên điện thoại
-2. Tab **Tài khoản** → đăng ký
-3. **Thêm vào màn hình chính** (PWA)
-4. Ôn tập 600 câu mọi lúc!
+| Phần | Số câu |
+|------|--------|
+| Chương I (quy tắc) | 8 |
+| Điểm liệt | 1 |
+| Chương II, III, IV | 1 + 1 + 1 |
+| Chương V (biển báo) | 9 |
+| Chương VI (sa hình) | 9 |
+| **Tổng** | **30 câu / 20 phút** |
+
+Điều kiện đạt: **≥ 27/30** và **không sai câu điểm liệt**.
