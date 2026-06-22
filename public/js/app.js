@@ -31,6 +31,7 @@ async function init() {
   bindAuth();
   registerPWA();
   showLoading("Đang tải ngân hàng 600 câu...");
+  await purgeStaleImageCaches();
   await loadQuestionBank();
   hideLoading();
   updateAuthUI();
@@ -193,10 +194,63 @@ function renderQuestionImage(q) {
   const src = escapeHtml(q.image);
   return `<div class="sahinh-image-wrap">
     <div class="image-loading">Đang tải hình...</div>
-    <img src="${src}" alt="${alt}" class="sahinh-image question-image" loading="eager" decoding="async"
-      onload="this.style.opacity='1';var p=this.previousElementSibling;if(p)p.remove()"
-      onerror="var p=this.previousElementSibling;if(p){p.className='image-error';p.textContent='Không tải được hình. Thử Ctrl+F5 tải lại trang.';}this.remove()">
+    <img data-src="${src}" alt="${alt}" class="sahinh-image question-image" decoding="async">
   </div>`;
+}
+
+function bindQuestionImages(root) {
+  if (!root) return;
+  root.querySelectorAll("img.question-image[data-src]").forEach(img => {
+    if (img.dataset.bound) return;
+    img.dataset.bound = "1";
+    const wrap = img.closest(".sahinh-image-wrap");
+    const loading = wrap?.querySelector(".image-loading");
+    const src = img.dataset.src;
+    let retries = 0;
+
+    const finishLoad = () => {
+      img.style.opacity = "1";
+      loading?.remove();
+    };
+
+    const load = () => {
+      img.src = retries > 0 ? `${src}?cb=${Date.now()}` : src;
+    };
+
+    img.addEventListener("load", finishLoad);
+    img.addEventListener("error", () => {
+      if (retries < 3) {
+        retries++;
+        if (loading) {
+          loading.className = "image-loading";
+          loading.textContent = `Đang tải hình... (lần ${retries + 1})`;
+        }
+        setTimeout(load, retries * 400);
+        return;
+      }
+      if (loading) {
+        loading.className = "image-error";
+        loading.textContent = "Không tải được hình. Kiểm tra mạng hoặc thử trình duyệt khác.";
+      }
+      img.remove();
+    });
+
+    load();
+  });
+}
+
+async function purgeStaleImageCaches() {
+  if (!("caches" in window)) return;
+  try {
+    const keys = await caches.keys();
+    await Promise.all(keys.map(async key => {
+      const cache = await caches.open(key);
+      const reqs = await cache.keys();
+      await Promise.all(reqs.map(req => {
+        if (req.url.includes("/images/official/")) return cache.delete(req);
+      }));
+    }));
+  } catch (_) {}
 }
 
 function preloadQuestionImages(questions) {
@@ -211,6 +265,7 @@ function getQuestionTypeLabel(q) {
   if (q.type === "essay") return "Tự luận";
   return "Trắc nghiệm";
 }
+
 function bindSettings() {
   document.getElementById("btn-save-settings")?.addEventListener("click", saveSettings);
   document.getElementById("btn-test-ai")?.addEventListener("click", testAI);
@@ -412,6 +467,7 @@ function renderPracticeQuestion(q) {
     <div id="explanation-area"></div>`;
 
   container.innerHTML = html;
+  bindQuestionImages(container);
 }
 
 let selectedOption = null;
@@ -569,6 +625,7 @@ function renderExamQuestion() {
   html += "</div>";
 
   container.innerHTML = html;
+  bindQuestionImages(container);
 
   document.getElementById("btn-exam-prev").disabled = currentIndex === 0;
   document.getElementById("btn-exam-next").textContent =
@@ -759,6 +816,7 @@ function renderSaHinhQuestion(q) {
     <div class="btn-group">
       <button class="btn btn-primary" onclick="submitSaHinhAnswer()">Kiểm tra đáp án</button>
     </div>`;
+  bindQuestionImages(container);
 }
 
 function selectSaHinhOption(index) {

@@ -1,4 +1,4 @@
-const CACHE_NAME = "bang-lai-v7";
+const CACHE_NAME = "bang-lai-v8";
 const ASSETS = [
   "/",
   "/index.html",
@@ -50,7 +50,9 @@ self.addEventListener("fetch", event => {
   if (url.origin !== self.location.origin) return;
   if (event.request.method !== "GET") return;
 
-  // Luon lay bank moi nhat (co field image)
+  // Anh: khong qua SW ? tranh cache loi lam img onerror
+  if (url.pathname.startsWith("/images/official/")) return;
+
   if (url.pathname === "/data/bank-600.json") {
     event.respondWith(
       fetch(event.request).then(res => {
@@ -60,21 +62,6 @@ self.addEventListener("fetch", event => {
         }
         return res;
       }).catch(() => caches.match(event.request))
-    );
-    return;
-  }
-
-  // Anh chinh thuc: cache sau khi tai thanh cong
-  if (url.pathname.startsWith("/images/official/")) {
-    event.respondWith(
-      caches.open(CACHE_NAME).then(cache =>
-        cache.match(event.request).then(cached =>
-          cached || fetch(event.request).then(res => {
-            if (res.ok) cache.put(event.request, res.clone());
-            return res;
-          })
-        )
-      )
     );
     return;
   }
