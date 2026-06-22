@@ -9,6 +9,8 @@ const PDF_PATH = process.argv[2] || path.join(__dirname, "../data/bo-600-officia
 const OUT_JSON = path.join(__dirname, "../public/data/bank-600.json");
 const IMG_DIR = path.join(__dirname, "../public/images/official");
 
+const { encodePng, isValidJpeg } = require("./png-encode");
+
 const ANSWER_OVERRIDES = {
   17: 0, 93: 0, 268: 0, 292: 0, 331: 1, 388: 0, 556: 0
 };
@@ -200,13 +202,18 @@ async function extractPageImages(page, pageNum, outDir) {
     const key = `${pageNum}-${name}`;
     if (seen.has(key)) continue;
     seen.add(key);
-    const file = path.join(outDir, `p${pageNum}-${name}.jpg`);
+    const file = path.join(outDir, `p${pageNum}-${name}.png`);
+    const jpgLegacy = file.replace(".png", ".jpg");
     if (fs.existsSync(file)) continue;
     try {
       const img = await getObj(name);
-      if (!img?.data || img.kind !== 2) continue;
-      fs.writeFileSync(file, Buffer.from(img.data));
-      saved++;
+      if (!img?.data || !img.width || !img.height) continue;
+      if (isValidJpeg(Buffer.from(img.data))) {
+        fs.writeFileSync(jpgLegacy, Buffer.from(img.data));
+      } else if (img.kind === 1 || img.kind === 2 || img.kind === 3) {
+        fs.writeFileSync(file, encodePng(img.width, img.height, img.data, img.kind));
+        saved++;
+      }
     } catch (_) {}
   }
   return saved;
@@ -214,10 +221,18 @@ async function extractPageImages(page, pageNum, outDir) {
 
 async function buildImageMapping(doc) {
   const existing = new Set(
-    fs.readdirSync(IMG_DIR).filter(f => f.endsWith(".jpg"))
+    fs.readdirSync(IMG_DIR).filter(f => f.endsWith(".png") || f.endsWith(".jpg"))
   );
   const mapping = new Map();
   const usedFiles = new Set();
+
+  const pickFile = (p, name) => {
+    const png = `p${p}-${name}.png`;
+    const jpg = `p${p}-${name}.jpg`;
+    if (existing.has(png)) return png;
+    if (existing.has(jpg)) return jpg;
+    return null;
+  };
 
   async function pageLocal(p) {
     const page = await doc.getPage(p);
@@ -227,8 +242,8 @@ async function buildImageMapping(doc) {
       const fn = ops.fnArray[i];
       if (fn !== 85 && fn !== 86) continue;
       const name = ops.argsArray[i][0];
-      const file = `p${p}-${name}.jpg`;
-      if (!existing.has(file)) continue;
+      const file = pickFile(p, name);
+      if (!file) continue;
       const key = typeof ops.argsArray[i][1] === "number" ? ops.argsArray[i][1] : 0;
       imgs.push({ file, key });
     }
@@ -270,8 +285,8 @@ async function buildImageMapping(doc) {
       const fn = ops.fnArray[i];
       if (fn !== 85 && fn !== 86) continue;
       const name = ops.argsArray[i][0];
-      const file = `p${p}-${name}.jpg`;
-      if (!existing.has(file) || usedFiles.has(file)) continue;
+      const file = pickFile(p, name);
+      if (!file || usedFiles.has(file)) continue;
       const key = typeof ops.argsArray[i][1] === "number" ? ops.argsArray[i][1] : 0;
       imgs.push({ file, key });
     }
