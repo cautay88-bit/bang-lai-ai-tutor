@@ -31,22 +31,30 @@ body {
   color: var(--text);
   line-height: 1.6;
   min-height: 100vh;
-  background-color: var(--bg-base);
-  background-image:
-    radial-gradient(ellipse 90% 60% at 50% -15%, rgba(59, 130, 246, 0.18), transparent 55%),
-    radial-gradient(ellipse 50% 40% at 100% 0%, rgba(6, 182, 212, 0.1), transparent 50%),
-    radial-gradient(ellipse 40% 35% at 0% 100%, rgba(37, 99, 235, 0.08), transparent 45%),
-    linear-gradient(165deg, #fafbfd 0%, #eef4ff 45%, #f4f7fb 100%);
-  background-attachment: fixed;
+  background-color: #e8eef6;
 }
 
 body::before {
   content: "";
   position: fixed;
   inset: 0;
+  z-index: -2;
+  background: url("/images/bg-landing.png") center top / cover no-repeat fixed;
+  pointer-events: none;
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
   z-index: -1;
-  background: url("/images/bg-pattern.svg") center / cover no-repeat fixed;
-  opacity: 0.85;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.82) 0%,
+    rgba(255, 255, 255, 0.55) 35%,
+    rgba(244, 247, 251, 0.35) 70%,
+    rgba(244, 247, 251, 0.2) 100%
+  );
   pointer-events: none;
 }
 
@@ -950,15 +958,14 @@ body.theme-moto .progress-fill {
   background: #c2410c;
 }
 
-body.theme-moto::before {
-  opacity: 0.7;
-}
-
-body.theme-moto {
-  background-image:
-    radial-gradient(ellipse 90% 60% at 50% -15%, rgba(251, 146, 60, 0.15), transparent 55%),
-    radial-gradient(ellipse 50% 40% at 100% 0%, rgba(234, 88, 12, 0.08), transparent 50%),
-    linear-gradient(165deg, #fffbf7 0%, #fff7ed 45%, #f4f7fb 100%);
+body.theme-moto::after {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 251, 247, 0.85) 0%,
+    rgba(255, 247, 237, 0.58) 35%,
+    rgba(255, 247, 237, 0.32) 70%,
+    rgba(255, 247, 237, 0.18) 100%
+  );
 }
 
 @media (max-width: 640px) {
