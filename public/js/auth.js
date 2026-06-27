@@ -35,7 +35,7 @@ async function apiRequest(path, options = {}) {
 
   const res = await fetch(path, { ...options, headers });
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.error || "L?i k?t n?i server");
+  if (!res.ok) throw new Error(data.error || "Lỗi kết nối server");
   return data;
 }
 
@@ -81,60 +81,40 @@ async function pushCloudProgress(progress) {
   return true;
 }
 
-async function syncProgressOnLogin() {
-  const cloud = await fetchCloudProgress();
-  const local = loadProgressLocal();
-
-  if (!cloud) {
-    await pushCloudProgress(local);
-    return local;
-  }
-
+function mergeVehicleProgress(local, cloud, vehicle) {
+  const topicIds = vehicle === "moto" ? getAllMotoTopicIds() : getAllTopicIds();
   const cloudTime = cloud.lastSession ? new Date(cloud.lastSession).getTime() : 0;
   const localTime = local.lastSession ? new Date(local.lastSession).getTime() : 0;
-
   if (localTime > cloudTime && local.totalQuestions > 0) {
-    const merged = mergeProgress(local, cloud);
-    saveProgressLocal(merged);
-    await pushCloudProgress(merged);
-    return merged;
+    return mergeProgress(local, cloud, topicIds);
   }
-
-  saveProgressLocal(cloud);
   return cloud;
 }
 
-function mergeProgress(a, b) {
-  const topics = {};
-  getAllTopicIds().forEach(id => {
-    const ta = a.topics[id] || { correct: 0, wrong: 0, total: 0 };
-    const tb = b.topics[id] || { correct: 0, wrong: 0, total: 0 };
-    topics[id] = {
-      correct: ta.correct + tb.correct,
-      wrong: ta.wrong + tb.wrong,
-      total: ta.total + tb.total,
-      lastPracticed: [ta.lastPracticed, tb.lastPracticed].filter(Boolean).sort().pop() || null
-    };
+async function syncProgressOnLogin() {
+  migrateLegacyProgress();
+  const cloudRaw = await fetchCloudProgress();
+  const bundle = normalizeCloudBundle(cloudRaw);
+
+  ["oto", "moto"].forEach(vehicle => {
+    const local = loadProgressLocalFor(vehicle);
+    const merged = mergeVehicleProgress(local, bundle[vehicle], vehicle);
+    saveProgressLocalFor(vehicle, merged);
+    bundle[vehicle] = merged;
   });
 
-  const examHistory = [...(a.examHistory || []), ...(b.examHistory || [])]
-    .sort((x, y) => new Date(y.date) - new Date(x.date))
-    .slice(0, 20);
-
-  return {
-    topics,
-    examHistory,
-    totalQuestions: (a.totalQuestions || 0) + (b.totalQuestions || 0),
-    totalCorrect: (a.totalCorrect || 0) + (b.totalCorrect || 0),
-    streak: Math.max(a.streak || 0, b.streak || 0),
-    lastSession: [a.lastSession, b.lastSession].filter(Boolean).sort().pop() || null
-  };
+  await pushCloudProgress(bundle);
+  return loadProgressLocal();
 }
 
 async function syncProgressToCloud() {
   if (!isLoggedIn()) return;
   try {
-    await pushCloudProgress(loadProgressLocal());
+    const cloudRaw = await fetchCloudProgress();
+    const bundle = normalizeCloudBundle(cloudRaw);
+    const vehicle = getCurrentVehicle() || "oto";
+    bundle[vehicle] = loadProgressLocalFor(vehicle);
+    await pushCloudProgress(bundle);
   } catch (e) {
     console.warn("Cloud sync failed:", e.message);
   }

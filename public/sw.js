@@ -1,11 +1,14 @@
-const CACHE_NAME = "bang-lai-v9";
+const CACHE_NAME = "bang-lai-v11";
 const ASSETS = [
   "/",
   "/index.html",
   "/css/style.css",
   "/images/bg-pattern.svg",
   "/images/logo-car.svg",
+  "/images/logo-moto.svg",
   "/js/topics.js",
+  "/js/moto-topics.js",
+  "/js/vehicle.js",
   "/js/questions.js",
   "/js/extra-questions.js",
   "/js/sahinh-questions.js",
@@ -45,24 +48,27 @@ self.addEventListener("activate", event => {
   );
 });
 
+function cacheJsonBank(event) {
+  event.respondWith(
+    fetch(event.request).then(res => {
+      if (res.ok) {
+        const copy = res.clone();
+        caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
+      }
+      return res;
+    }).catch(() => caches.match(event.request))
+  );
+}
+
 self.addEventListener("fetch", event => {
   const url = new URL(event.request.url);
   if (url.origin !== self.location.origin) return;
   if (event.request.method !== "GET") return;
 
-  // Anh: khong qua SW ? tranh cache loi lam img onerror
   if (url.pathname.startsWith("/images/official/")) return;
 
-  if (url.pathname === "/data/bank-600.json") {
-    event.respondWith(
-      fetch(event.request).then(res => {
-        if (res.ok) {
-          const copy = res.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
-        }
-        return res;
-      }).catch(() => caches.match(event.request))
-    );
+  if (url.pathname === "/data/bank-600.json" || url.pathname === "/data/bank-250-moto.json") {
+    cacheJsonBank(event);
     return;
   }
 

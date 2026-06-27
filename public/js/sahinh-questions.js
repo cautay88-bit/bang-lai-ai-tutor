@@ -67,6 +67,9 @@ function getRandomSaHinhQuestions(count) {
 }
 
 function getQuestionBankSize() {
+  if (typeof isMotoMode === "function" && isMotoMode() && typeof getActiveQuestionBank === "function") {
+    return getActiveQuestionBank().length;
+  }
   return QUESTION_BANK.length;
 }
 

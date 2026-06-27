@@ -3,29 +3,45 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="theme-color" content="#2563eb">
+  <meta name="theme-color" content="#1e40af">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="description" content="On tap va thi gia lap ly thuyet lai xe o to B2 voi AI Tutor">
-  <title>AI Tutor — Ôn thi bằng lái xe ô tô</title>
+  <meta name="description" content="On luyen thi bang lai xe o to va mo to A1 voi AI Tutor — chuan Cong van 2262">
+  <title>ÔN LUYỆN THI BẰNG LÁI XE — AI Tutor</title>
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="icon" href="/icons/icon-192.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="/icons/icon-192.svg">
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-  <header class="app-header">
-    <div class="header-inner">
-      <div class="logo">
-        <div class="logo-icon"><img src="/images/logo-car.svg" alt="Logo o to"></div>
+  <!-- Header trang chọn loại xe -->
+  <header class="app-header header-landing" id="header-landing">
+    <div class="header-inner header-landing-inner">
+      <div class="logo logo-main">
+        <div class="logo-icon logo-icon-main"><img src="/images/logo-car.svg" alt="Logo"></div>
         <div>
-          <h1>AI Tutor Bằng Lái B2</h1>
-          <p>Ôn tập &amp; thi giả lập 600 câu</p>
+          <h1>ÔN LUYỆN THI BẰNG LÁI XE</h1>
+          <p>Powered by <strong>AI Tutor</strong></p>
         </div>
       </div>
-      <nav>
+      <div id="auth-badge-landing" class="auth-badge"></div>
+    </div>
+  </header>
+
+  <!-- Header trong module Oto / Moto -->
+  <header class="app-header header-module" id="header-module" style="display:none">
+    <div class="header-inner">
+      <div class="logo">
+        <button class="btn-back-module" onclick="exitToLanding()" title="Về trang chủ">←</button>
+        <div class="logo-icon" id="module-logo-icon"><img src="/images/logo-car.svg" alt="Logo"></div>
+        <div>
+          <h1 id="module-title">ÔN LUYỆN THI BẰNG LÁI XE</h1>
+          <p id="module-subtitle">AI Tutor · Ô tô hạng B</p>
+        </div>
+      </div>
+      <nav id="module-nav">
         <button class="nav-btn active" data-view="home">Trang chủ</button>
         <button class="nav-btn" data-view="practice">Ôn tập</button>
-        <button class="nav-btn" data-view="sahinh">Sa hình</button>
+        <button class="nav-btn nav-sahinh" data-view="sahinh">Sa hình</button>
         <button class="nav-btn" data-view="exam">Thi giả lập</button>
         <button class="nav-btn" data-view="stats">Thống kê</button>
         <button class="nav-btn" data-view="account">Tài khoản</button>
@@ -36,17 +52,70 @@
   </header>
 
   <main>
-    <!-- TRANG CHỦ -->
-    <section id="view-home" class="view active">
-      <div class="hero">
-        <div class="hero-badge">🚗 Ôn thi bằng lái xe hạng B2</div>
-        <h2>Chương trình ôn tập thông minh</h2>
-        <p>AI Tutor giúp bạn ôn 600 câu lý thuyết chính thức (Công văn 2262/CSGT-P5), sa hình, và theo dõi điểm yếu.</p>
-        <p style="font-size:0.85rem;color:var(--accent)" id="bank-size-info"></p>
-        <div class="btn-group" style="justify-content:center">
-          <button class="btn btn-primary" onclick="showView('practice')">Bắt đầu ôn tập</button>
-          <button class="btn btn-secondary" onclick="showView('sahinh')">Luyện sa hình</button>
-          <button class="btn btn-secondary" onclick="showView('exam')">Thi giả lập ngay</button>
+    <!-- LANDING: chọn Oto / Moto -->
+    <section id="view-landing" class="view active">
+      <div class="landing-hero">
+        <span class="landing-badge">Chuẩn Công văn 2262/CSGT-P5 · AI Tutor</span>
+        <h2>Chọn loại bằng lái bạn muốn ôn</h2>
+        <p>Hai chương trình riêng biệt — tiến độ học tập được lưu tách biệt cho từng loại xe.</p>
+      </div>
+      <div class="vehicle-cards">
+        <article class="vehicle-card vehicle-card-oto" onclick="enterModule('oto')">
+          <div class="vehicle-card-icon"><img src="/images/logo-car.svg" alt="O to"></div>
+          <span class="vehicle-card-badge">Hạng B</span>
+          <h3>Ôn luyện thi Ô tô</h3>
+          <p>600 câu lý thuyết · Sa hình · Thi giả lập 30 câu/20 phút · 60 câu điểm liệt</p>
+          <ul class="vehicle-card-features">
+            <li>6 chương chính thức</li>
+            <li>300 hình biển báo &amp; sa hình</li>
+            <li>AI Tutor giải thích &amp; gợi ý ôn</li>
+          </ul>
+          <button class="btn btn-primary vehicle-card-btn">Vào ôn luyện Ô tô →</button>
+        </article>
+        <article class="vehicle-card vehicle-card-moto" onclick="enterModule('moto')">
+          <div class="vehicle-card-icon"><img src="/images/logo-moto.svg" alt="Mo to"></div>
+          <span class="vehicle-card-badge badge-moto">Hạng A1</span>
+          <h3>Ôn luyện thi Mô tô</h3>
+          <p>250 câu lý thuyết · Thi giả lập A1 · Điểm liệt · Chuẩn sát hạch 2025</p>
+          <ul class="vehicle-card-features">
+            <li>Bộ 250 câu hạng A1</li>
+            <li>Ôn theo chương &amp; thi thử</li>
+            <li>AI Tutor hỗ trợ giải thích</li>
+          </ul>
+          <button class="btn btn-primary btn-moto vehicle-card-btn">Vào ôn luyện Mô tô →</button>
+        </article>
+      </div>
+      <p class="landing-footer-note">Tiến độ Ô tô và Mô tô được lưu riêng · Đăng nhập để đồng bộ cloud</p>
+    </section>
+
+    <!-- TRANG CHỦ MODULE -->
+    <section id="view-home" class="view">
+      <div id="home-content-oto">
+        <div class="hero">
+          <div class="hero-badge hero-badge-oto">🚗 Ô tô · Hạng B</div>
+          <h2>Chương trình ôn tập thông minh</h2>
+          <p>AI Tutor giúp bạn ôn 600 câu lý thuyết chính thức (Công văn 2262/CSGT-P5), sa hình, và theo dõi điểm yếu.</p>
+          <p class="bank-info-line" id="bank-size-info"></p>
+          <div class="btn-group" style="justify-content:center">
+            <button class="btn btn-primary" onclick="showView('practice')">Bắt đầu ôn tập</button>
+            <button class="btn btn-secondary" onclick="showView('sahinh')">Luyện sa hình</button>
+            <button class="btn btn-secondary" onclick="showView('exam')">Thi giả lập ngay</button>
+          </div>
+        </div>
+      </div>
+      <div id="home-content-moto" style="display:none">
+        <div class="hero">
+          <div class="hero-badge hero-badge-moto">🏍️ Mô tô · Hạng A1</div>
+          <h2>Ôn luyện thi bằng lái xe mô tô</h2>
+          <p>AI Tutor hỗ trợ ôn 250 câu lý thuyết hạng A1 theo Công văn 2262/CSGT-P5.</p>
+          <p class="bank-info-line" id="bank-size-info-moto"></p>
+          <div class="coming-soon-banner" id="moto-data-banner" style="display:none">
+            <strong>Đang tải</strong> bộ 250 câu A1...
+          </div>
+          <div class="btn-group" style="justify-content:center">
+            <button class="btn btn-primary btn-moto" onclick="showView('practice')">Xem chủ đề ôn tập</button>
+            <button class="btn btn-secondary btn-moto" onclick="showView('exam')">Thi giả lập A1</button>
+          </div>
         </div>
       </div>
 
@@ -73,8 +142,14 @@
     <section id="view-practice" class="view">
       <div id="practice-topics-panel">
         <div class="hero" style="padding:1rem 0 2rem">
-          <h2>Chọn chủ đề ôn tập</h2>
-          <p>6 chương theo bộ 600 câu hỏi lý thuyết lái xe ô tô</p>
+          <h2 id="practice-panel-title">Chọn chủ đề ôn tập</h2>
+          <p id="practice-panel-desc">5 chương theo bộ 250 câu mô tô hạng A1</p>
+        </div>
+        <div id="moto-practice-placeholder" class="coming-soon-panel" style="display:none">
+          <div class="coming-soon-icon">🏍️</div>
+          <h3>Bộ 250 câu A1 đang được cập nhật</h3>
+          <p>Chúng tôi đang import dữ liệu chính thức từ Công văn 2262. Tính năng ôn tập Mô tô sẽ sớm khả dụng.</p>
+          <button class="btn btn-secondary" onclick="showView('home')">← Về trang chủ Mô tô</button>
         </div>
         <div class="grid-2" id="topics-grid"></div>
       </div>
@@ -85,18 +160,18 @@
         </div>
         <div class="card">
           <h3 id="practice-topic-title"></h3>
-          <div class="btn-group" style="margin-bottom:1rem">
+          <div class="btn-group practice-mode-btns" style="margin-bottom:1rem">
             <button class="mode-btn btn btn-secondary active" data-mode="mixed" onclick="setPracticeMode('mixed')">Hỗn hợp</button>
             <button class="mode-btn btn btn-secondary" data-mode="mcq" onclick="setPracticeMode('mcq')">Trắc nghiệm</button>
             <button class="mode-btn btn btn-secondary" data-mode="essay" onclick="setPracticeMode('essay')">Tự luận</button>
-            <button class="mode-btn btn btn-secondary" data-mode="sahinh" onclick="setPracticeMode('sahinh')">Sa hình</button>
+            <button class="mode-btn btn btn-secondary mode-sahinh" data-mode="sahinh" onclick="setPracticeMode('sahinh')">Sa hình</button>
           </div>
           <div id="question-container"></div>
         </div>
       </div>
     </section>
 
-    <!-- SA HÌNH -->
+    <!-- SA HÌNH (chỉ Oto) -->
     <section id="view-sahinh" class="view">
       <div class="hero" style="padding:1rem 0 2rem">
         <h2>Luyện sa hình</h2>
@@ -114,21 +189,38 @@
     <!-- THI GIẢ LẬP -->
     <section id="view-exam" class="view">
       <div id="exam-setup-panel">
-        <div class="hero" style="padding:1rem 0 2rem">
-          <h2>Thi giả lập hạng B</h2>
-          <p>Chuẩn Công văn 2262/CSGT-P5 — 30 câu / 20 phút / đạt 27/30 + 1 câu điểm liệt</p>
+        <div id="exam-setup-oto">
+          <div class="hero" style="padding:1rem 0 2rem">
+            <h2>Thi giả lập hạng B</h2>
+            <p>Chuẩn Công văn 2262/CSGT-P5 — 30 câu / 20 phút / đạt 27/30 + 1 câu điểm liệt</p>
+          </div>
+          <div class="card" style="max-width:500px;margin:0 auto">
+            <ul class="exam-rules-list">
+              <li>8 câu Chương I (quy tắc giao thông)</li>
+              <li>1 câu điểm liệt (tình huống mất ATGT nghiêm trọng)</li>
+              <li>1 câu Chương II, III, IV</li>
+              <li>9 câu Chương V (biển báo) + 9 câu Chương VI (sa hình)</li>
+            </ul>
+            <p class="exam-warning">Sai câu điểm liệt = trượt dù các câu khác đúng hết.</p>
+            <button class="btn btn-primary" style="width:100%" onclick="startExam()">Bắt đầu thi (20 phút)</button>
+          </div>
         </div>
-        <div class="card" style="max-width:500px;margin:0 auto">
-          <ul style="font-size:0.9rem;color:var(--text-muted);margin:0 0 1rem 1.2rem;line-height:1.8">
-            <li>8 câu Chương I (quy tắc giao thông)</li>
-            <li>1 câu điểm liệt (tình huống mất ATGT nghiêm trọng)</li>
-            <li>1 câu Chương II, III, IV</li>
-            <li>9 câu Chương V (biển báo) + 9 câu Chương VI (sa hình)</li>
-          </ul>
-          <p style="font-size:0.85rem;color:var(--danger);margin-bottom:1rem">
-            Sai câu điểm liệt = trượt dù các câu khác đúng hết.
-          </p>
-          <button class="btn btn-primary" style="width:100%" onclick="startExam()">Bắt đầu thi (20 phút)</button>
+        <div id="exam-setup-moto" style="display:none">
+          <div class="hero" style="padding:1rem 0 2rem">
+            <h2>Thi giả lập hạng A1</h2>
+            <p>Chuẩn Công văn 2262/CSGT-P5 — 25 câu / 19 phút / đạt 21/25 + 1 câu điểm liệt</p>
+          </div>
+          <div class="card" style="max-width:500px;margin:0 auto">
+            <ul class="exam-rules-list">
+              <li>8 câu Chương I (quy tắc giao thông)</li>
+              <li>1 câu điểm liệt (tình huống mất ATGT nghiêm trọng)</li>
+              <li>1 câu Chương II (văn hóa giao thông)</li>
+              <li>1 câu Chương III (kỹ thuật lái xe)</li>
+              <li>8 câu Chương IV (biển báo) + 6 câu Chương V (sa hình)</li>
+            </ul>
+            <p class="exam-warning">Sai câu điểm liệt = trượt dù các câu khác đúng hết.</p>
+            <button class="btn btn-primary btn-moto" style="width:100%" onclick="startExam()">Bắt đầu thi (19 phút)</button>
+          </div>
         </div>
       </div>
 
@@ -156,8 +248,8 @@
     <!-- THỐNG KÊ -->
     <section id="view-stats" class="view">
       <div class="hero" style="padding:1rem 0 2rem">
-        <h2>Thống kê học tập</h2>
-        <p>Theo dõi tiến độ theo từng chương và lịch sử thi</p>
+        <h2 id="stats-title">Thống kê học tập</h2>
+        <p id="stats-desc">Theo dõi tiến độ theo từng chương và lịch sử thi</p>
       </div>
       <div id="stats-overview"></div>
       <div class="card">
@@ -174,7 +266,7 @@
     <section id="view-account" class="view">
       <div class="hero" style="padding:1rem 0 2rem">
         <h2>Tài khoản &amp; đồng bộ cloud</h2>
-        <p>Đăng nhập để lưu tiến độ học tập trên server, đồng bộ giữa các thiết bị</p>
+        <p>Đăng nhập để lưu tiến độ học tập trên server — tiến độ Ô tô và Mô tô được lưu riêng</p>
       </div>
       <div class="grid-2">
         <div class="card" id="account-logged-out">
@@ -198,7 +290,7 @@
         </div>
         <div class="card" id="account-logged-in" style="display:none">
           <h3>👤 <span id="account-username"></span></h3>
-          <p style="color:var(--text-muted);margin:1rem 0">Tiến độ đã đồng bộ lên cloud. Dữ liệu lưu tại server local.</p>
+          <p style="color:var(--text-muted);margin:1rem 0">Tiến độ đã đồng bộ lên cloud. Dữ liệu Ô tô và Mô tô lưu riêng.</p>
           <div class="btn-group">
             <button class="btn btn-secondary" id="btn-sync-now">Đồng bộ ngay</button>
             <button class="btn btn-danger" id="btn-logout">Đăng xuất</button>
@@ -251,7 +343,7 @@
           <label>API Key</label>
           <input type="password" id="input-api-key" placeholder="sk-... hoặc AIza...">
           <p style="font-size:0.8rem;color:var(--text-muted);margin-top:0.35rem">
-            API key chỉ lưu trên trình duyệt. Không bật AI vẫn dùng được <span id="settings-bank-count">90+</span> câu hỏi có sẵn.
+            API key chỉ lưu trên trình duyệt. Không bật AI vẫn dùng được <span id="settings-bank-count">600</span> câu hỏi có sẵn.
           </p>
         </div>
         <div class="btn-group">
@@ -259,7 +351,7 @@
           <button class="btn btn-secondary" id="btn-test-ai">Kiểm tra kết nối</button>
         </div>
         <hr style="border-color:var(--border);margin:1.5rem 0">
-        <button class="btn btn-danger" id="btn-reset-progress" style="width:100%">Xóa toàn bộ tiến độ</button>
+        <button class="btn btn-danger" id="btn-reset-progress" style="width:100%">Xóa tiến độ (loại xe hiện tại)</button>
       </div>
     </section>
   </main>
@@ -270,6 +362,8 @@
   </div>
 
   <script src="/js/topics.js"></script>
+  <script src="/js/moto-topics.js"></script>
+  <script src="/js/vehicle.js"></script>
   <script src="/js/questions.js"></script>
   <script src="/js/extra-questions.js"></script>
   <script src="/js/sahinh-questions.js"></script>
@@ -280,7 +374,7 @@
   <script src="/js/app.js"></script>
   <script>
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("/sw.js?v=9").then(reg => {
+      navigator.serviceWorker.register("/sw.js?v=11").then(reg => {
         reg.update();
       }).catch(() => {});
     }

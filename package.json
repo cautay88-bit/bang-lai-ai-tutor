@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node server.js",
     "build": "node scripts/verify-bank.js",
+    "build-moto": "node scripts/build-bank-250-moto.js",
     "import-pdf": "node scripts/import-from-pdf.js",
     "reextract-images": "node scripts/reextract-images.js",
     "import-csv": "node scripts/import-from-csv.js"

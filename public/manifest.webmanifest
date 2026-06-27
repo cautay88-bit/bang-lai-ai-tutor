@@ -1,7 +1,7 @@
 {
-  "name": "AI Tutor Bang Lai B2",
-  "short_name": "Bang Lai B2",
-  "description": "On tap va thi gia lap ly thuyet lai xe o to",
+  "name": "ÔN LUYỆN THI BẰNG LÁI XE — AI Tutor",
+  "short_name": "Ôn thi GPLX",
+  "description": "Ôn luyện thi bằng lái xe Ô tô (600 câu) và Mô tô A1 (250 câu) với AI Tutor — chuẩn Công văn 2262",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#f0f9ff",

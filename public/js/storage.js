@@ -1,20 +1,44 @@
-const STORAGE_KEY = "bang-lai-ai-tutor-progress";
+const PROGRESS_KEYS = {
+  oto: "bang-lai-progress-oto",
+  moto: "bang-lai-progress-moto"
+};
+const LEGACY_KEY = "bang-lai-ai-tutor-progress";
 
-function loadProgressLocal() {
+function migrateLegacyProgress() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(LEGACY_KEY);
+    if (raw && !localStorage.getItem(PROGRESS_KEYS.oto)) {
+      localStorage.setItem(PROGRESS_KEYS.oto, raw);
+      localStorage.removeItem(LEGACY_KEY);
+    }
+  } catch (_) {}
+}
+
+function progressKeyFor(vehicle) {
+  return PROGRESS_KEYS[vehicle || getCurrentVehicle() || "oto"];
+}
+
+function loadProgressLocalFor(vehicle) {
+  migrateLegacyProgress();
+  try {
+    const raw = localStorage.getItem(progressKeyFor(vehicle));
     if (raw) return JSON.parse(raw);
   } catch (_) {}
-  return createEmptyProgress();
+  return createEmptyProgressFor(vehicle);
+}
+
+function loadProgressLocal() {
+  return loadProgressLocalFor(getCurrentVehicle() || "oto");
 }
 
 function loadProgress() {
   return loadProgressLocal();
 }
 
-function createEmptyProgress() {
+function createEmptyProgressFor(vehicle) {
+  const topicIds = vehicle === "moto" ? getAllMotoTopicIds() : getAllTopicIds();
   const topics = {};
-  getAllTopicIds().forEach(id => {
+  topicIds.forEach(id => {
     topics[id] = { correct: 0, wrong: 0, total: 0, lastPracticed: null };
   });
   return {
@@ -27,8 +51,16 @@ function createEmptyProgress() {
   };
 }
 
+function createEmptyProgress() {
+  return createEmptyProgressFor(getCurrentVehicle() || "oto");
+}
+
+function saveProgressLocalFor(vehicle, data) {
+  localStorage.setItem(progressKeyFor(vehicle), JSON.stringify(data));
+}
+
 function saveProgressLocal(data) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  saveProgressLocalFor(getCurrentVehicle() || "oto", data);
 }
 
 function saveProgress(data) {
@@ -114,9 +146,10 @@ function getOverallStats() {
 function getStudySuggestions() {
   const weak = getWeakTopics(3);
   const suggestions = [];
+  const topics = getActiveTopics();
 
   weak.forEach(({ topicId, accuracy }) => {
-    const topic = getTopicById(topicId);
+    const topic = getTopicByIdActive(topicId);
     if (!topic) return;
     suggestions.push({
       topicId,
@@ -128,12 +161,12 @@ function getStudySuggestions() {
   });
 
   if (suggestions.length === 0) {
-    TOPICS.slice(0, 2).forEach(topic => {
+    topics.slice(0, 2).forEach(topic => {
       suggestions.push({
         topicId: topic.id,
         title: topic.title,
         accuracy: null,
-        message: `Bắt đầu ôn tập "${topic.title}" để AI tutor theo dõi điểm yếu của bạn.`,
+        message: `Bắt đầu ôn tập "${topic.title}" để AI Tutor theo dõi điểm yếu của bạn.`,
         keywords: topic.keywords
       });
     });
@@ -143,8 +176,52 @@ function getStudySuggestions() {
 }
 
 function resetProgress() {
-  localStorage.removeItem(STORAGE_KEY);
+  const vehicle = getCurrentVehicle() || "oto";
+  localStorage.removeItem(progressKeyFor(vehicle));
   if (isLoggedIn()) {
-    pushCloudProgress(createEmptyProgress()).catch(() => {});
+    syncProgressToCloud();
   }
+}
+
+function mergeProgress(a, b, topicIds) {
+  const topics = {};
+  topicIds.forEach(id => {
+    const ta = a.topics[id] || { correct: 0, wrong: 0, total: 0 };
+    const tb = b.topics[id] || { correct: 0, wrong: 0, total: 0 };
+    topics[id] = {
+      correct: ta.correct + tb.correct,
+      wrong: ta.wrong + tb.wrong,
+      total: ta.total + tb.total,
+      lastPracticed: [ta.lastPracticed, tb.lastPracticed].filter(Boolean).sort().pop() || null
+    };
+  });
+
+  const examHistory = [...(a.examHistory || []), ...(b.examHistory || [])]
+    .sort((x, y) => new Date(y.date) - new Date(x.date))
+    .slice(0, 20);
+
+  return {
+    topics,
+    examHistory,
+    totalQuestions: (a.totalQuestions || 0) + (b.totalQuestions || 0),
+    totalCorrect: (a.totalCorrect || 0) + (b.totalCorrect || 0),
+    streak: Math.max(a.streak || 0, b.streak || 0),
+    lastSession: [a.lastSession, b.lastSession].filter(Boolean).sort().pop() || null
+  };
+}
+
+function normalizeCloudBundle(raw) {
+  if (!raw) return { oto: createEmptyProgressFor("oto"), moto: createEmptyProgressFor("moto") };
+  if (raw.topics) return { oto: raw, moto: createEmptyProgressFor("moto") };
+  return {
+    oto: raw.oto || createEmptyProgressFor("oto"),
+    moto: raw.moto || createEmptyProgressFor("moto")
+  };
+}
+
+function getCloudBundleFromLocal() {
+  return {
+    oto: loadProgressLocalFor("oto"),
+    moto: loadProgressLocalFor("moto")
+  };
 }

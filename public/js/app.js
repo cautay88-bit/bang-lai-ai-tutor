@@ -26,16 +26,16 @@ const AppState = {
 document.addEventListener("DOMContentLoaded", init);
 
 async function init() {
+  migrateLegacyProgress();
   bindNavigation();
   bindSettings();
   bindAuth();
   registerPWA();
-  showLoading("Đang tải ngân hàng 600 câu...");
+  showLoading("Đang tải...");
   await purgeStaleImageCaches();
-  await loadQuestionBank();
+  await ensureAllBanksReady();
   hideLoading();
   updateAuthUI();
-  updateBankInfo();
 
   if (isLoggedIn()) {
     try {
@@ -43,15 +43,83 @@ async function init() {
     } catch (_) {}
   }
 
+  showView("landing");
+}
+
+function enterModule(vehicle) {
+  setCurrentVehicle(vehicle);
+  document.getElementById("header-landing").style.display = "none";
+  document.getElementById("header-module").style.display = "block";
+  updateModuleHeader();
+  updateNavForVehicle();
+
+  document.getElementById("home-content-oto").style.display = isOtoMode() ? "block" : "none";
+  document.getElementById("home-content-moto").style.display = isMotoMode() ? "block" : "none";
+
+  if (isOtoMode()) {
+    updateBankInfo();
+  } else {
+    const el = document.getElementById("bank-size-info-moto");
+    const bank = typeof getActiveQuestionBank === "function" ? getActiveQuestionBank() : [];
+    const imgCount = bank.filter(q => q.image).length;
+    const critical = bank.filter(q => q.critical).length;
+    if (el) {
+      el.textContent = isOfficialBank()
+        ? `Ngân hàng: 250 câu A1 chính thức (${imgCount} có hình, ${critical} điểm liệt)`
+        : "Đang tải bộ 250 câu A1...";
+    }
+    const banner = document.getElementById("moto-data-banner");
+    if (banner) banner.style.display = isOfficialBank() ? "none" : "block";
+  }
+
   renderHome();
   showView("home");
 }
 
+function exitToLanding() {
+  setCurrentVehicle(null);
+  document.getElementById("header-landing").style.display = "block";
+  document.getElementById("header-module").style.display = "none";
+  showView("landing");
+}
+
+function updateModuleHeader() {
+  const cfg = getVehicleConfig();
+  const logoEl = document.getElementById("module-logo-icon");
+  if (logoEl) {
+    logoEl.innerHTML = `<img src="/images/logo-${cfg.id === "moto" ? "moto" : "car"}.svg" alt="${cfg.label}">`;
+  }
+  const sub = document.getElementById("module-subtitle");
+  if (sub) sub.textContent = `AI Tutor · ${cfg.label} ${cfg.badge}`;
+  const statsTitle = document.getElementById("stats-title");
+  if (statsTitle) statsTitle.textContent = `Thống kê · ${cfg.label} ${cfg.badge}`;
+  const statsDesc = document.getElementById("stats-desc");
+  if (statsDesc) statsDesc.textContent = `Tiến độ ôn tập ${cfg.label.toLowerCase()} — lưu riêng biệt với loại xe kia`;
+  const practiceTitle = document.getElementById("practice-panel-title");
+  if (practiceTitle) practiceTitle.textContent = isMotoMode() ? "Chủ đề ôn tập A1" : "Chọn chủ đề ôn tập";
+  const practiceDesc = document.getElementById("practice-panel-desc");
+  if (practiceDesc) {
+    practiceDesc.textContent = isMotoMode()
+      ? "5 chương theo bộ 250 câu mô tô hạng A1"
+      : "6 chương theo bộ 600 câu lý thuyết lái xe ô tô";
+  }
+}
+
+function updateNavForVehicle() {
+  const cfg = getVehicleConfig();
+  document.querySelectorAll(".nav-sahinh").forEach(el => {
+    el.style.display = cfg.hasSahinh ? "" : "none";
+  });
+  document.querySelectorAll(".mode-sahinh").forEach(el => {
+    el.style.display = cfg.hasSahinh ? "" : "none";
+  });
+}
+
 function bindNavigation() {
-  document.querySelectorAll(".nav-btn").forEach(btn => {
+  document.querySelectorAll("#module-nav .nav-btn").forEach(btn => {
     btn.addEventListener("click", () => {
       const view = btn.dataset.view;
-      document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
+      document.querySelectorAll("#module-nav .nav-btn").forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
       showView(view);
     });
@@ -59,12 +127,24 @@ function bindNavigation() {
 }
 
 function showView(name) {
+  if (name === "sahinh" && isMotoMode()) {
+    toast("Sa hình chỉ có trong phần Ô tô", "error");
+    name = "home";
+  }
+
   AppState.currentView = name;
   document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
   const el = document.getElementById(`view-${name}`);
   if (el) el.classList.add("active");
 
+  if (name !== "landing" && Vehicle.current) {
+    document.querySelectorAll("#module-nav .nav-btn").forEach(b => {
+      b.classList.toggle("active", b.dataset.view === name);
+    });
+  }
+
   switch (name) {
+    case "landing": break;
     case "home": renderHome(); break;
     case "practice": renderPracticeTopics(); break;
     case "sahinh": loadSaHinhQuestion(); break;
@@ -76,6 +156,7 @@ function showView(name) {
 }
 
 function updateBankInfo() {
+  if (!isOtoMode()) return;
   const size = typeof getQuestionBankSize === "function" ? getQuestionBankSize() : QUESTION_BANK.length;
   const saCount = typeof getSaHinhQuestions === "function" ? getSaHinhQuestions().length : 0;
   const imgCount = QUESTION_BANK.filter(q => q.image).length;
@@ -145,17 +226,23 @@ function bindAuth() {
 function updateAuthUI() {
   const user = getAuthUser();
   const badge = document.getElementById("auth-badge");
+  const badgeLanding = document.getElementById("auth-badge-landing");
   const loggedOut = document.getElementById("account-logged-out");
   const loggedIn = document.getElementById("account-logged-in");
 
+  const badgeHtml = user
+    ? `<span class="auth-user">👤 ${escapeHtml(user.username)}</span>`
+    : "";
+
+  if (badge) badge.innerHTML = badgeHtml;
+  if (badgeLanding) badgeLanding.innerHTML = badgeHtml;
+
   if (user) {
-    if (badge) badge.innerHTML = `<span class="auth-user">👤 ${escapeHtml(user.username)}</span>`;
     if (loggedOut) loggedOut.style.display = "none";
     if (loggedIn) loggedIn.style.display = "block";
     const nameEl = document.getElementById("account-username");
     if (nameEl) nameEl.textContent = user.username;
   } else {
-    if (badge) badge.innerHTML = "";
     if (loggedOut) loggedOut.style.display = "block";
     if (loggedIn) loggedIn.style.display = "none";
   }
@@ -315,10 +402,13 @@ function renderHome() {
   const weakList = document.getElementById("weak-topics-list");
   const weak = getWeakTopics(5);
   if (weak.length === 0) {
-    weakList.innerHTML = '<li class="empty-state"><span>Chưa có dữ liệu — hãy bắt đầu ôn tập!</span></li>';
+    const emptyMsg = isMotoMode()
+      ? "Chưa có dữ liệu — hãy bắt đầu ôn tập A1!"
+      : "Chưa có dữ liệu — hãy bắt đầu ôn tập!";
+    weakList.innerHTML = `<li class="empty-state"><span>${emptyMsg}</span></li>`;
   } else {
     weakList.innerHTML = weak.map(w => {
-      const topic = getTopicById(w.topicId);
+      const topic = getTopicByIdActive(w.topicId);
       const acc = Math.round(w.accuracy * 100);
       return `<li>
         <span>${topic?.title || w.topicId}</span>
@@ -346,11 +436,20 @@ async function renderSuggestions() {
 }
 
 function renderPracticeTopics() {
+  const placeholder = document.getElementById("moto-practice-placeholder");
+  const grid = document.getElementById("topics-grid");
+
+  if (placeholder) placeholder.style.display = "none";
+  if (grid) grid.style.display = "";
+
   ensureBankReady().then(() => {
-    const grid = document.getElementById("topics-grid");
-    grid.innerHTML = TOPICS.map(topic => {
+    const topics = getActiveTopics();
+    grid.innerHTML = topics.map(topic => {
       const acc = getTopicAccuracy(topic.id);
       const pct = acc !== null ? acc : 0;
+      const count = typeof getQuestionsByTopic === "function"
+        ? getQuestionsByTopic(topic.id).length
+        : (topic.questionCount || 0);
       return `
       <div class="topic-card" onclick="startPractice('${topic.id}')">
         <div class="chapter">${topic.chapter}</div>
@@ -359,7 +458,7 @@ function renderPracticeTopics() {
         <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
         <div class="meta">
           <span>${acc !== null ? acc + "% chính xác" : "Chưa ôn"}</span>
-          <span>${getQuestionsByTopic(topic.id).length} câu</span>
+          <span>${count} câu</span>
         </div>
       </div>`;
     }).join("");
@@ -368,15 +467,15 @@ function renderPracticeTopics() {
 
 function startPractice(topicId) {
   AppState.practice = { topicId, question: null, answered: false, mode: "mixed" };
-  document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
-  document.querySelector('[data-view="practice"]').classList.add("active");
+  document.querySelectorAll("#module-nav .nav-btn").forEach(b => b.classList.remove("active"));
+  document.querySelector('#module-nav [data-view="practice"]').classList.add("active");
   showView("practice");
   showPracticeSession();
   loadNextPracticeQuestion();
 }
 
 function showPracticeSession() {
-  const topic = getTopicById(AppState.practice.topicId);
+  const topic = getTopicByIdActive(AppState.practice.topicId);
   document.getElementById("practice-topics-panel").style.display = "none";
   document.getElementById("practice-session-panel").style.display = "block";
   document.getElementById("practice-topic-title").textContent = topic?.title || "";
@@ -443,7 +542,7 @@ function renderPracticeQuestion(q) {
     <div class="question-box">
       <span class="q-type ${q.type === "essay" ? "essay" : q.type === "sahinh" ? "sahinh" : ""}">${getQuestionTypeLabel(q)}</span>
       ${q.critical ? '<span class="q-type" style="background:var(--danger);margin-left:0.5rem">Điểm liệt</span>' : ""}
-      ${q.num ? `<span style="font-size:0.8rem;color:var(--text-muted);display:block;margin-bottom:0.5rem">Câu ${q.num} / 600</span>` : ""}
+      ${q.num ? `<span style="font-size:0.8rem;color:var(--text-muted);display:block;margin-bottom:0.5rem">Câu ${q.num} / ${isMotoMode() ? "250" : "600"}</span>` : ""}
       ${renderQuestionImage(q)}
       <p class="q-text">${escapeHtml(q.text)}</p>`;
 
@@ -548,16 +647,19 @@ function renderExamSetup() {
   document.getElementById("exam-setup-panel").style.display = "block";
   document.getElementById("exam-session-panel").style.display = "none";
   document.getElementById("exam-result-panel").style.display = "none";
+  const otoSetup = document.getElementById("exam-setup-oto");
+  const motoSetup = document.getElementById("exam-setup-moto");
+  if (otoSetup) otoSetup.style.display = isOtoMode() ? "block" : "none";
+  if (motoSetup) motoSetup.style.display = isMotoMode() ? "block" : "none";
 }
 
 function startExam() {
-  const duration = 20;
-  const questionCount = 30;
+  const duration = getExamDurationMinutes();
 
   ensureBankReady().then(() => {
     AppState.exam = {
       active: true,
-      questions: isOfficialBank() ? buildExamPaperB() : getRandomQuestions(questionCount),
+      questions: isOfficialBank() ? buildExamPaper() : getRandomQuestions(getExamQuestionCount()),
       currentIndex: 0,
       answers: {},
       startTime: Date.now(),
@@ -606,7 +708,7 @@ function renderExamQuestion() {
   let html = `<div class="question-box">
     <span class="q-type ${q.type === "sahinh" ? "sahinh" : q.type === "essay" ? "essay" : ""}">${getQuestionTypeLabel(q)}</span>
     ${q.critical ? '<span class="q-type" style="background:var(--danger);margin-left:0.5rem">Điểm liệt</span>' : ""}
-    ${q.num ? `<span style="font-size:0.8rem;color:var(--text-muted);display:block;margin-bottom:0.5rem">Câu ${q.num} / 600</span>` : ""}
+    ${q.num ? `<span style="font-size:0.8rem;color:var(--text-muted);display:block;margin-bottom:0.5rem">Câu ${q.num} / ${isMotoMode() ? "250" : "600"}</span>` : ""}
     ${renderQuestionImage(q)}
     <p class="q-text">${escapeHtml(q.text)}</p>`;
 
@@ -688,7 +790,7 @@ async function finishExam() {
 
   const total = questions.length;
   const scorePct = Math.round((correct / total) * 100);
-  const passScore = isOfficialBank() ? 27 : Math.ceil(total * 0.84);
+  const passScore = getExamPassScore(total);
 
   let criticalFailed = false;
   let criticalQuestion = null;
@@ -724,7 +826,9 @@ async function finishExam() {
       ${criticalFailed ? `<p style="color:var(--danger);font-weight:600;margin:0.75rem 0">⚠️ Trả lời sai câu điểm liệt — bài thi không đạt dù các câu khác đúng.</p>` : ""}
       <p style="color:var(--text-muted);margin:1rem 0">
         ${isOfficialBank()
-          ? `Thi thật hạng B: 30 câu / 20 phút / đạt ${passScore}/30. Có 1 câu điểm liệt trong đề.`
+          ? (isMotoMode()
+            ? `Thi thật hạng A1: 25 câu / 19 phút / đạt ${passScore}/25. Có 1 câu điểm liệt trong đề.`
+            : `Thi thật hạng B: 30 câu / 20 phút / đạt ${passScore}/30. Có 1 câu điểm liệt trong đề.`)
           : `Điểm chuẩn: ${passScore}/${total} câu. Thời gian: ${elapsed} phút / ${durationMinutes} phút.`}
       </p>
       ${weakTopics.length ? `
@@ -732,7 +836,7 @@ async function finishExam() {
           <h3>📌 Chủ đề cần ôn thêm</h3>
           <ul class="weak-topics-list">
             ${weakTopics.map(w => {
-              const t = getTopicById(w.topicId);
+              const t = getTopicByIdActive(w.topicId);
               return `<li><span>${t?.title}</span><span class="weak-badge">${Math.round(w.accuracy * 100)}%</span></li>`;
             }).join("")}
           </ul>
@@ -757,7 +861,8 @@ function renderStats() {
     </div>`;
 
   const topicStats = document.getElementById("topic-stats-list");
-  topicStats.innerHTML = TOPICS.map(topic => {
+  const topics = getActiveTopics();
+  topicStats.innerHTML = topics.map(topic => {
     const t = progress.topics[topic.id] || { correct: 0, wrong: 0, total: 0 };
     const acc = t.total > 0 ? Math.round((t.correct / t.total) * 100) : 0;
     return `
@@ -880,6 +985,8 @@ function escapeHtml(str) {
 }
 
 window.startPractice = startPractice;
+window.enterModule = enterModule;
+window.exitToLanding = exitToLanding;
 window.backToTopics = backToTopics;
 window.loadNextPracticeQuestion = loadNextPracticeQuestion;
 window.selectOption = selectOption;

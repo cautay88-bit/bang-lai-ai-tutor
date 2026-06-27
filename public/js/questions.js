@@ -386,14 +386,16 @@ const QUESTION_BANK = [
 ];
 
 function getQuestionsByTopic(topicId) {
-  return QUESTION_BANK.filter(q => q.topicId === topicId);
+  const bank = typeof getActiveQuestionBank === "function" ? getActiveQuestionBank() : QUESTION_BANK;
+  return bank.filter(q => q.topicId === topicId);
 }
 
 function getRandomQuestions(count, topicIds = null) {
-  if (isOfficialBank() && count === 30) {
-    return buildExamPaperB();
+  if (isOfficialBank()) {
+    if (isMotoMode() && count === 25) return buildExamPaperA1();
+    if (!isMotoMode() && count === 30) return buildExamPaperB();
   }
-  let pool = QUESTION_BANK.filter(q => isMcqLike(q));
+  let pool = getActiveQuestionBank().filter(q => isMcqLike(q));
   if (topicIds && topicIds.length > 0) {
     pool = pool.filter(q => topicIds.includes(q.topicId));
   }
@@ -401,11 +403,12 @@ function getRandomQuestions(count, topicIds = null) {
 }
 
 function getQuestionById(id) {
-  return QUESTION_BANK.find(q => q.id === id);
+  const bank = typeof getActiveQuestionBank === "function" ? getActiveQuestionBank() : QUESTION_BANK;
+  return bank.find(q => q.id === id);
 }
 
 function getMcqQuestions(count, topicId = null) {
-  let pool = QUESTION_BANK.filter(q => q.type === "mcq" || q.type === "sahinh");
+  let pool = getActiveQuestionBank().filter(q => q.type === "mcq" || q.type === "sahinh");
   if (topicId) pool = pool.filter(q => q.topicId === topicId);
   return [...pool].sort(() => Math.random() - 0.5).slice(0, count);
 }

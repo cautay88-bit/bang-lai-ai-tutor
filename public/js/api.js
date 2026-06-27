@@ -178,7 +178,7 @@ async function getPersonalizedStudyPlan() {
   }
 
   const weakDesc = weak.map(w => {
-    const t = getTopicById(w.topicId);
+    const t = getTopicByIdActive(w.topicId);
     return `${t?.title}: ${Math.round(w.accuracy * 100)}% đúng`;
   }).join("; ");
 
