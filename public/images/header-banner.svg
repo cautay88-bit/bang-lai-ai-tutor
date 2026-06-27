@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 300" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="sky" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#dbeafe"/>
+      <stop offset="45%" stop-color="#eff6ff"/>
+      <stop offset="100%" stop-color="#e0f2fe"/>
+    </linearGradient>
+    <linearGradient id="road" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#93c5fd" stop-opacity="0"/>
+      <stop offset="50%" stop-color="#60a5fa" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#93c5fd" stop-opacity="0"/>
+    </linearGradient>
+    <pattern id="dots" width="24" height="24" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.2" fill="#2563eb" opacity="0.08"/>
+    </pattern>
+  </defs>
+
+  <rect width="1600" height="300" fill="url(#sky)"/>
+  <rect width="1600" height="300" fill="url(#dots)"/>
+
+  <!-- skyline mÝ -->
+  <g opacity="0.12" fill="#2563eb">
+    <rect x="80" y="140" width="40" height="100" rx="2"/>
+    <rect x="130" y="110" width="35" height="130" rx="2"/>
+    <rect x="175" y="125" width="30" height="115" rx="2"/>
+    <rect x="1320" y="115" width="38" height="125" rx="2"/>
+    <rect x="1370" y="135" width="42" height="105" rx="2"/>
+    <rect x="1425" y="105" width="35" height="135" rx="2"/>
+    <rect x="1475" y="130" width="45" height="110" rx="2"/>
+  </g>
+
+  <!-- watermark  thông tin éng dång mÝ -->
+  <text x="800" y="95" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="52" font-weight="800" fill="#2563eb" opacity="0.07" letter-spacing="4">ÔN LUYÆN THI B°NG LÁI XE</text>
+  <text x="800" y="155" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="36" font-weight="700" fill="#0891b2" opacity="0.09" letter-spacing="8">AI TUTOR</text>
+  <text x="800" y="200" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="22" font-weight="600" fill="#1d4ed8" opacity="0.08" letter-spacing="2">600 câu Ô tô · 250 câu Mô tô A1 · Chu©n Công vn 2262</text>
+
+  <!-- accent trái / ph£i -->
+  <text x="120" y="170" font-family="Segoe UI, system-ui, sans-serif" font-size="18" font-weight="600" fill="#2563eb" opacity="0.06" transform="rotate(-8 120 170)">H¡ng B</text>
+  <text x="1480" y="170" font-family="Segoe UI, system-ui, sans-serif" font-size="18" font-weight="600" fill="#ea580c" opacity="0.06" transform="rotate(8 1480 170)">H¡ng A1</text>
+
+  <!-- °Ýng k» trang trí -->
+  <rect y="268" width="1600" height="32" fill="url(#road)"/>
+  <line x1="0" y1="278" x2="1600" y2="278" stroke="#2563eb" stroke-opacity="0.12" stroke-width="2" stroke-dasharray="28 18"/>
+  <line x1="0" y1="288" x2="1600" y2="288" stroke="#fff" stroke-opacity="0.5" stroke-width="3" stroke-dasharray="20 20"/>
+
+  <!-- icon xe mÝ -->
+  <g opacity="0.07" transform="translate(680 218)">
+    <rect x="0" y="8" width="48" height="22" rx="6" fill="#2563eb"/>
+    <circle cx="12" cy="32" r="7" fill="#1e40af"/>
+    <circle cx="38" cy="32" r="7" fill="#1e40af"/>
+  </g>
+  <g opacity="0.06" transform="translate(870 220)">
+    <circle cx="14" cy="14" r="10" fill="#ea580c"/>
+    <rect x="8" y="22" width="28" height="14" rx="4" fill="#ea580c"/>
+    <circle cx="12" cy="38" r="6" fill="#c2410c"/>
+    <circle cx="32" cy="38" r="6" fill="#c2410c"/>
+  </g>
+</svg>
