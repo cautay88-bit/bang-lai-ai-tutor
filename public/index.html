@@ -336,8 +336,15 @@
           <select id="select-model">
             <option value="gpt-4o-mini">gpt-4o-mini (OpenAI)</option>
             <option value="gpt-4o">gpt-4o (OpenAI)</option>
-            <option value="gemini-2.0-flash">gemini-2.0-flash (Gemini)</option>
+            <option value="gemini-2.5-flash">gemini-2.5-flash (Gemini — khuyến nghị free)</option>
+            <option value="gemini-2.0-flash-lite">gemini-2.0-flash-lite (Gemini)</option>
+            <option value="gemini-1.5-flash">gemini-1.5-flash (Gemini)</option>
           </select>
+          <p id="gemini-billing-hint" style="display:none;font-size:0.8rem;color:#b45309;margin-top:0.5rem;line-height:1.5">
+            Nếu báo lỗi quota limit: 0 — hãy đổi sang <strong>gemini-2.5-flash</strong>, tạo API key mới tại
+            <a href="https://aistudio.google.com" target="_blank" rel="noopener">aistudio.google.com</a>.
+            Một số tài khoản cần <strong>Set up billing</strong> trong AI Studio (vẫn dùng free tier, không tự trừ tiền nếu không vượt hạn mức).
+          </p>
         </div>
         <div class="form-group">
           <label>API Key</label>

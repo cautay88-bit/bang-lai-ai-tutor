@@ -3,9 +3,16 @@ const AI_CONFIG_KEY = "bang-lai-ai-config";
 function loadAIConfig() {
   try {
     const raw = localStorage.getItem(AI_CONFIG_KEY);
-    if (raw) return JSON.parse(raw);
+    if (raw) {
+      const config = JSON.parse(raw);
+      if (config.model === "gemini-2.0-flash") {
+        config.model = "gemini-2.5-flash";
+        saveAIConfig(config);
+      }
+      return config;
+    }
   } catch (_) {}
-  return { apiKey: "", provider: "openai", model: "gpt-4o-mini", enabled: false };
+  return { apiKey: "", provider: "gemini", model: "gemini-2.5-flash", enabled: false };
 }
 
 function saveAIConfig(config) {
@@ -21,10 +28,10 @@ async function callAI(messages, options = {}) {
   const res = await fetch("/api/chat", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
+      body: JSON.stringify({
       messages,
       provider: config.provider,
-      model: config.model,
+      model: config.provider === "gemini" ? normalizeGeminiModel(config.model) : config.model,
       apiKey: config.apiKey,
       ...options
     })
@@ -37,6 +44,11 @@ async function callAI(messages, options = {}) {
 
   const data = await res.json();
   return data.content;
+}
+
+function normalizeGeminiModel(model) {
+  if (!model || model === "gemini-2.0-flash") return "gemini-2.5-flash";
+  return model;
 }
 
 async function generateAIQuestion(topicId, type = "mcq") {
@@ -260,8 +272,21 @@ async function checkAIConnection() {
   const config = loadAIConfig();
   if (!config.apiKey) return { ok: false, message: "Chưa nhập API key" };
   try {
-    await callAI([{ role: "user", content: "Trả lời: OK" }]);
-    return { ok: true, message: "Kết nối AI thành công!" };
+    const res = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        messages: [{ role: "user", content: "Trả lời đúng một từ: OK" }],
+        provider: config.provider,
+        model: config.provider === "gemini" ? normalizeGeminiModel(config.model) : config.model,
+        apiKey: config.apiKey
+      })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) return { ok: false, message: data.error || "Lỗi kết nối AI" };
+    const modelNote = data.modelUsed && data.modelUsed !== config.model
+      ? ` (dùng model ${data.modelUsed})` : "";
+    return { ok: true, message: `Kết nối AI thành công!${modelNote}` };
   } catch (e) {
     return { ok: false, message: e.message };
   }

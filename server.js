@@ -125,8 +125,60 @@ async function callGemini(apiKey, model, messages) {
     body: JSON.stringify(body)
   });
   const data = await res.json();
-  if (!res.ok) throw new Error(data.error?.message || "Gemini API error");
+  if (!res.ok) {
+    const err = new Error(data.error?.message || "Gemini API error");
+    err.code = data.error?.code;
+    err.status = data.error?.status;
+    throw err;
+  }
   return data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+}
+
+const GEMINI_FALLBACK_MODELS = [
+  "gemini-2.5-flash",
+  "gemini-2.0-flash-lite",
+  "gemini-1.5-flash"
+];
+
+function isGeminiQuotaError(err) {
+  const msg = (err?.message || "").toLowerCase();
+  return msg.includes("quota") || msg.includes("limit: 0") || msg.includes("resource exhausted");
+}
+
+async function callGeminiWithFallback(apiKey, model, messages) {
+  const tried = [];
+  const models = [model || "gemini-2.5-flash", ...GEMINI_FALLBACK_MODELS.filter(m => m !== model)];
+  let lastError = null;
+
+  for (const m of [...new Set(models)]) {
+    tried.push(m);
+    try {
+      const content = await callGemini(apiKey, m, messages);
+      return { content, modelUsed: m, tried };
+    } catch (e) {
+      lastError = e;
+      if (!isGeminiQuotaError(e)) break;
+    }
+  }
+
+  const friendly = formatGeminiError(lastError, tried);
+  throw new Error(friendly);
+}
+
+function formatGeminiError(err, triedModels = []) {
+  const raw = err?.message || "Loi Gemini API";
+  if (raw.includes("limit: 0") || raw.includes("free_tier")) {
+    return [
+      "Gemini bao het quota free (limit: 0). Model gemini-2.0-flash da ngung ho tro free tier.",
+      "Cach xu ly: (1) Doi model sang gemini-2.5-flash trong Cai dat AI; (2) Tao API key moi tai aistudio.google.com;",
+      "(3) Neu van loi: vao AI Studio > Set up billing (lien ket billing van dung free tier o nhieu khu vuc).",
+      triedModels.length ? `Da thu: ${triedModels.join(", ")}` : ""
+    ].filter(Boolean).join(" ");
+  }
+  if (raw.toLowerCase().includes("quota") || raw.toLowerCase().includes("resource exhausted")) {
+    return `Het quota Gemini tam thoi. Doi 1-2 phut roi thu lai, hoac doi sang model gemini-2.5-flash. Chi tiet: ${raw.slice(0, 200)}`;
+  }
+  return raw;
 }
 
 function readBody(req) {
@@ -269,7 +321,8 @@ const server = http.createServer(async (req, res) => {
       if (!apiKey) return jsonResponse(res, 400, { error: "Thieu API key" });
       let content;
       if (provider === "gemini") {
-        content = await callGemini(apiKey, model || "gemini-2.0-flash", messages);
+        const result = await callGeminiWithFallback(apiKey, model || "gemini-2.5-flash", messages);
+        return jsonResponse(res, 200, { content: result.content, modelUsed: result.modelUsed });
       } else {
         content = await callOpenAI(apiKey, model || "gpt-4o-mini", messages);
       }

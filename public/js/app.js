@@ -356,6 +356,12 @@ function getQuestionTypeLabel(q) {
 function bindSettings() {
   document.getElementById("btn-save-settings")?.addEventListener("click", saveSettings);
   document.getElementById("btn-test-ai")?.addEventListener("click", testAI);
+  document.getElementById("select-provider")?.addEventListener("change", () => {
+    const hint = document.getElementById("gemini-billing-hint");
+    if (hint) {
+      hint.style.display = document.getElementById("select-provider").value === "gemini" ? "block" : "none";
+    }
+  });
   document.getElementById("btn-reset-progress")?.addEventListener("click", () => {
     if (confirm("Xóa toàn bộ tiến độ học tập?")) {
       resetProgress();
@@ -368,16 +374,22 @@ function bindSettings() {
 function renderSettings() {
   const config = loadAIConfig();
   document.getElementById("input-api-key").value = config.apiKey || "";
-  document.getElementById("select-provider").value = config.provider || "openai";
-  document.getElementById("select-model").value = config.model || "gpt-4o-mini";
+  document.getElementById("select-provider").value = config.provider || "gemini";
+  const model = config.provider === "gemini" ? normalizeGeminiModel(config.model) : (config.model || "gpt-4o-mini");
+  document.getElementById("select-model").value = model;
   document.getElementById("input-ai-enabled").checked = config.enabled;
+  const hint = document.getElementById("gemini-billing-hint");
+  if (hint) hint.style.display = config.provider === "gemini" ? "block" : "none";
 }
 
 function saveSettings() {
+  const provider = document.getElementById("select-provider").value;
+  let model = document.getElementById("select-model").value;
+  if (provider === "gemini") model = normalizeGeminiModel(model);
   const config = {
     apiKey: document.getElementById("input-api-key").value.trim(),
-    provider: document.getElementById("select-provider").value,
-    model: document.getElementById("select-model").value,
+    provider,
+    model,
     enabled: document.getElementById("input-ai-enabled").checked
   };
   saveAIConfig(config);
