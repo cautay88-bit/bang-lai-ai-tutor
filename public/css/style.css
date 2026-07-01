@@ -520,8 +520,59 @@ main {
   margin-top: 1rem;
 }
 
-.explanation-box h4 {
+.explanation-box--wrong {
+  background: #fff7ed;
+  border-color: #fdba74;
+}
+
+.explanation-box--wrong h4 {
+  color: #c2410c;
+}
+
+.explanation-box--correct h4 {
   color: #0f766e;
+}
+
+.explanation-compare {
+  margin: 0.75rem 0 1rem;
+  padding: 0.85rem 1rem;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.explanation-your,
+.explanation-correct {
+  font-size: 0.92rem;
+  line-height: 1.6;
+  margin: 0.35rem 0;
+}
+
+.explanation-your span,
+.explanation-correct span {
+  font-weight: 700;
+  display: inline-block;
+  min-width: 6.5rem;
+}
+
+.explanation-your span {
+  color: #dc2626;
+}
+
+.explanation-correct span {
+  color: #059669;
+}
+
+.explanation-detail strong {
+  display: block;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.explanation-box h4 {
   margin-bottom: 0.45rem;
   font-size: 0.92rem;
 }

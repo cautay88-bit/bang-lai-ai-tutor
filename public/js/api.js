@@ -80,6 +80,61 @@ ${type === "mcq" ? `{
   }
 }
 
+function stripOptionPrefix(opt) {
+  return (opt || "").replace(/^[A-D]\.\s*/, "").trim();
+}
+
+function getOptionLetter(index) {
+  return ["A", "B", "C", "D"][index] || String.fromCharCode(65 + index);
+}
+
+function buildLocalMcqExplanation(question, selectedIndex, isCorrect) {
+  const ci = question.correct;
+  const correctLetter = getOptionLetter(ci);
+  const correctText = stripOptionPrefix(question.options[ci]);
+  const parts = [];
+
+  if (!isCorrect && selectedIndex != null && selectedIndex !== ci) {
+    const chosenLetter = getOptionLetter(selectedIndex);
+    const chosenText = stripOptionPrefix(question.options[selectedIndex]);
+    parts.push(
+      `Bạn đã chọn đáp án ${chosenLetter}: «${chosenText}». Đáp án này chưa phù hợp với tình huống mà câu hỏi đang hỏi.`
+    );
+  }
+
+  parts.push(
+    `Đối với trường hợp này, câu trả lời đúng phải là ${correctLetter}: «${correctText}» — vì vậy đáp án ${correctLetter} mới là lựa chọn chính xác.`
+  );
+
+  if (question.explanation?.trim()) {
+    parts.push(question.explanation.trim());
+  } else {
+    parts.push(
+      `Cần đọc kỹ các từ khóa trong đề bài (loại phương tiện, điều kiện đường, tốc độ, khu vực, thời gian…), sau đó đối chiếu từng đáp án với quy định tại Luật Giao thông đường bộ và bộ câu hỏi chính thức (Công văn 2262/CSGT-P5). Các phương án còn lại mô tả nhóm xe hoặc quy tắc khác, không khớp hoàn toàn với yêu cầu cụ thể của câu hỏi.`
+    );
+
+    const others = question.options
+      .map((opt, i) => ({ i, letter: getOptionLetter(i), text: stripOptionPrefix(opt) }))
+      .filter(({ i }) => i !== ci);
+
+    if (!isCorrect && others.length) {
+      const brief = others
+        .slice(0, 2)
+        .map(({ letter, text }) => `đáp án ${letter} («${text.slice(0, 80)}${text.length > 80 ? "…" : ""}»)`)
+        .join(" và ");
+      parts.push(`Lưu ý: ${brief} không đáp ứng đúng điều kiện đã nêu trong câu hỏi, nên cần loại trừ khi chọn đáp án.`);
+    }
+  }
+
+  if (isCorrect) {
+    parts.push("Bạn đã chọn đúng. Hãy ghi nhớ quy định này để áp dụng khi ôn tập và khi thi thật.");
+  } else {
+    parts.push("Gợi ý ôn tập: Sau khi xem giải thích, hãy tìm lại câu hỏi cùng chủ đề trong mục Ôn theo chương để củng cố kiến thức.");
+  }
+
+  return parts.join("\n\n");
+}
+
 async function gradeEssayAnswer(question, userAnswer) {
   const config = loadAIConfig();
   if (!config.enabled || !config.apiKey) {
@@ -144,29 +199,33 @@ function gradeEssayLocally(question, userAnswer) {
   };
 }
 
-async function getAIExplanation(question, userAnswer, isCorrect) {
+async function getAIExplanation(question, selectedIndex, isCorrect) {
+  const userAnswer = selectedIndex != null ? question.options[selectedIndex] : "";
+  const local = buildLocalMcqExplanation(question, selectedIndex, isCorrect);
   const config = loadAIConfig();
   if (!config.enabled || !config.apiKey) {
-    return question.explanation;
+    return local;
   }
 
   const prompt = `Giải thích đáp án câu hỏi thi bằng lái xe bằng ngôn ngữ dễ hiểu cho người mới học.
 
 Câu hỏi: ${question.text}
-${question.type === "mcq" ? `Đáp án đúng: ${question.options[question.correct]}` : ""}
+${question.type === "mcq" || question.type === "sahinh" ? `Đáp án đúng: ${question.options[question.correct]}` : ""}
 Học viên trả lời: ${userAnswer || "(chưa trả lời)"}
 Kết quả: ${isCorrect ? "Đúng" : "Sai"}
 
-Viết 2-3 đoạn ngắn giải thích tại sao, mẹo nhớ, và lưu ý khi lái xe thực tế.`;
+Viết 2-3 đoạn ngắn giải thích:
+- Nếu sai: nêu rõ vì sao đáp án học viên chọn chưa đúng, và tại sao đáp án đúng mới phù hợp với tình huống trong câu hỏi.
+- Nếu đúng: khẳng định và bổ sung mẹo nhớ, lưu ý khi lái xe thực tế.`;
 
   try {
     const content = await callAI([
       { role: "system", content: "Giải thích dễ hiểu, thân thiện, tiếng Việt." },
       { role: "user", content: prompt }
     ]);
-    return content || question.explanation;
+    return (content && content.trim()) || local;
   } catch (_) {
-    return question.explanation;
+    return local;
   }
 }
 

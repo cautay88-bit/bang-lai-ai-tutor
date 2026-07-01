@@ -579,6 +579,43 @@ function selectOption(index) {
   });
 }
 
+function renderExplanationBox(isCorrect, question, selectedIndex, explanation, extraHtml = "") {
+  const isMcq = question.type === "mcq" || question.type === "sahinh";
+  const correctLetter = isMcq ? getOptionLetter(question.correct) : "";
+  const correctText = isMcq ? stripOptionPrefix(question.options[question.correct]) : "";
+  const chosenLetter = isMcq && selectedIndex != null ? getOptionLetter(selectedIndex) : "";
+  const chosenText = isMcq && selectedIndex != null ? stripOptionPrefix(question.options[selectedIndex]) : "";
+  const paragraphs = (explanation || "")
+    .split(/\n\n+/)
+    .map(p => p.trim())
+    .filter(Boolean)
+    .map(p => `<p>${escapeHtml(p)}</p>`)
+    .join("");
+
+  let compareHtml = "";
+  if (isMcq && !isCorrect && selectedIndex != null) {
+    compareHtml = `
+      <div class="explanation-compare">
+        <p class="explanation-your"><span>Bạn chọn:</span> ${escapeHtml(chosenLetter)}. ${escapeHtml(chosenText)}</p>
+        <p class="explanation-correct"><span>Đáp án đúng:</span> ${escapeHtml(correctLetter)}. ${escapeHtml(correctText)}</p>
+      </div>`;
+  } else if (isMcq && isCorrect) {
+    compareHtml = `
+      <p class="explanation-correct"><span>Đáp án đúng:</span> ${escapeHtml(correctLetter)}. ${escapeHtml(correctText)}</p>`;
+  }
+
+  return `
+    <div class="explanation-box ${isCorrect ? "explanation-box--correct" : "explanation-box--wrong"}">
+      <h4>${isCorrect ? "✅ Chính xác!" : "❌ Chưa đúng — xem giải thích chi tiết"}</h4>
+      ${compareHtml}
+      <div class="explanation-detail">
+        <strong>Giải thích</strong>
+        ${extraHtml}
+        ${paragraphs || "<p>Đáp án đúng đã được đánh dấu màu xanh ở trên.</p>"}
+      </div>
+    </div>`;
+}
+
 async function submitPracticeAnswer() {
   if (AppState.practice.answered) return;
   const q = AppState.practice.question;
@@ -601,7 +638,7 @@ async function submitPracticeAnswer() {
       if (i === q.correct) btn.classList.add("correct");
       else if (i === selectedOption && !isCorrect) btn.classList.add("wrong");
     });
-    explanation = await getAIExplanation(q, q.options[selectedOption], isCorrect);
+    explanation = await getAIExplanation(q, selectedOption, isCorrect);
   } else {
     const answer = document.getElementById("essay-answer")?.value?.trim();
     if (!answer) {
@@ -624,12 +661,14 @@ async function submitPracticeAnswer() {
   AppState.practice.answered = true;
   hideLoading();
 
-  document.getElementById("explanation-area").innerHTML = `
-    <div class="explanation-box">
-      <h4>${isCorrect ? "✅ Chính xác!" : "❌ Chưa đúng — xem giải thích"}</h4>
-      ${extraHtml}
-      <p>${escapeHtml(explanation)}</p>
-    </div>`;
+  document.getElementById("explanation-area").innerHTML =
+    renderExplanationBox(
+      isCorrect,
+      q,
+      q.type === "mcq" || q.type === "sahinh" ? selectedOption : null,
+      explanation,
+      extraHtml
+    );
 
   toast(isCorrect ? "Trả lời đúng!" : "Hãy xem giải thích bên dưới", isCorrect ? "success" : "error");
   selectedOption = null;
@@ -937,23 +976,23 @@ async function submitSaHinhAnswer() {
   if (!q || AppState.sahinh.answered) return;
   if (AppState.sahinh.selected === null) return toast("Vui lòng chọn đáp án", "error");
 
-  const isCorrect = AppState.sahinh.selected === q.correct;
+  showLoading("Đang chấm bài...");
+  const selected = AppState.sahinh.selected;
+  const isCorrect = selected === q.correct;
   AppState.sahinh.answered = true;
 
   document.querySelectorAll("#sahinh-container .option-btn").forEach((btn, i) => {
     btn.disabled = true;
     if (i === q.correct) btn.classList.add("correct");
-    else if (i === AppState.sahinh.selected && !isCorrect) btn.classList.add("wrong");
+    else if (i === selected && !isCorrect) btn.classList.add("wrong");
   });
 
-  const explanation = await getAIExplanation(q, q.options[AppState.sahinh.selected], isCorrect);
+  const explanation = await getAIExplanation(q, selected, isCorrect);
+  hideLoading();
   recordAnswer(q.topicId, isCorrect, "sahinh");
 
-  document.getElementById("sahinh-explanation").innerHTML = `
-    <div class="explanation-box">
-      <h4>${isCorrect ? "✅ Chính xác!" : "❌ Chưa đúng — xem giải thích"}</h4>
-      <p>${escapeHtml(explanation)}</p>
-    </div>`;
+  document.getElementById("sahinh-explanation").innerHTML =
+    renderExplanationBox(isCorrect, q, selected, explanation);
   toast(isCorrect ? "Trả lời đúng!" : "Xem giải thích bên dưới", isCorrect ? "success" : "error");
 }
 
